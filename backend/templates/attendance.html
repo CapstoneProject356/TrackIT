@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance | TrackIT{% endblock %}
+
+{% block content %}
+<h2 class="text-center mb-4">Mark Attendance</h2>
+
+<div class="card mb-3 shadow-sm">
+    <div class="card-body">
+        <h5>Step 1: GPS Verification</h5>
+        <button class="btn btn-primary" onclick="verifyGPS()">Check GPS</button>
+        <p id="gpsStatus" class="mt-2"></p>
+    </div>
+</div>
+
+<div class="card mb-3 shadow-sm">
+    <div class="card-body">
+        <h5>Step 2: Scan QR Code</h5>
+        <input type="file" accept="image/*" onchange="scanQR(this)">
+        <p id="qrStatus" class="mt-2"></p>
+    </div>
+</div>
+
+<div class="card mb-3 shadow-sm">
+    <div class="card-body text-center">
+        <h5>Step 3: Face Verification</h5>
+        <video id="video" width="320" height="240" autoplay muted playsinline class="border rounded"></video>
+        <div class="mt-2">
+            <button class="btn btn-success" onclick="captureFace()">Capture Face</button>
+        </div>
+        <p id="faceStatus" class="mt-2"></p>
+        <div id="capturedFaceContainer" class="mt-2"></div>
+    </div>
+</div>
+
+
+<div class="text-center mt-3">
+    <button class="btn btn-dark btn-lg" onclick="markAttendance()">Submit Attendance</button>
+    <p id="attendanceStatus" class="mt-2"></p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/gps.js') }}"></script>
+<script src="{{ url_for('static', filename='js/qr_scan.js') }}"></script>
+<script src="{{ url_for('static', filename='js/face_capture.js') }}"></script>
+<script src="{{ url_for('static', filename='js/attendance.js') }}"></script>
+{% endblock %}

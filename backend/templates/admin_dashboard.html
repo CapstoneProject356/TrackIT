@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | TrackIT{% endblock %}
+
+{% block content %}
+<h2 class="text-center mb-4">Admin Dashboard</h2>
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card shadow text-center p-3">
+            <h5>Manage Users</h5>
+            <p>Add/Edit/Delete Students & Faculty</p>
+            <a href="#" class="btn btn-primary">Manage</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow text-center p-3">
+            <h5>View Reports</h5>
+            <p>Overall attendance analytics</p>
+            <a href="/reports" class="btn btn-success">Go</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow text-center p-3">
+            <h5>System Settings</h5>
+            <p>Configure system parameters</p>
+            <a href="#" class="btn btn-warning">Configure</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

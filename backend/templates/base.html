@@ -1,0 +1,163 @@
+<!--
+cd TrackIT
+Envo\Scripts\activate
+python -m backend.app -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}TrackIT{% endblock %}</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .content-wrapper {
+            flex: 1;
+        }
+
+        footer {
+            background-color: #212529;
+            color: white;
+        }
+
+        /* Brand Styling */
+        .brand-text {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
+            transition: 0.3s;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #0d6efd;
+            text-decoration: underline;
+            transition: 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+        <!-- Logo and Brand -->
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="TrackIT Logo" height="40" class="me-2">
+            <span class="brand-text">TrackIT</span>
+        </a>
+
+        <!-- Toggler for mobile -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto fw-semibold">
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/login">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/attendance">Attendance</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/reports">Reports</a>
+                </li>
+                
+                <!-- New links -->
+<li class="nav-item">
+    <a class="nav-link text-white" href="/about">About Us</a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link text-white" href="#contact">Contact</a>
+</li>
+
+        </div>
+    </div>
+</nav>
+
+<br>
+
+<!-- MAIN CONTENT -->
+<div class="content-wrapper container mt-4">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- FOOTER -->
+<footer id="contact" class="footer-dark mt-auto">
+    <div class="container py-5">
+        <div class="row">
+            <!-- Brand -->
+            <div class="col-md-4 mb-4">
+                <h4 class="fw-bold">TrackIT</h4>
+                <p class="text-muted">
+                    Smart attendance system using GPS, Face Recognition, and QR verification
+                    to ensure accuracy and transparency.
+                </p>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="col-md-4 mb-4">
+                <h5 class="fw-semibold">Quick Links</h5>
+                <ul class="list-unstyled footer-links">
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/attendance">Attendance</a></li>
+                    <li><a href="/reports">Reports</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact / Info -->
+            <div class="col-md-4 mb-4">
+                <h5 class="fw-semibold">Contact</h5>
+                <p class="mb-1">📧 support@trackit.com</p>
+                <p class="mb-1">📍 Computer Engineering Dept</p>
+                <p class="mb-1">© 2025 TrackIT</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="footer-bottom text-center py-3">
+        Designed with ❤️ for Smart Attendance
+    </div>
+</footer>
+
+
+<!-- TOAST -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:11">
+    <div id="liveToast" class="toast align-items-center text-white bg-primary border-0">
+        <div class="d-flex">
+            <div class="toast-body" id="toastMsg">Message</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+
+</body>
+</html>
+

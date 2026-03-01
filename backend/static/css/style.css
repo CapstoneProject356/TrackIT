@@ -1,0 +1,256 @@
+:root {
+    --bg-main: #0b0f14;      /* Main background */
+    --bg-surface: #121826;  /* Sections */
+    --bg-card: #161d2e;     /* Cards */
+    --border-soft: rgba(255,255,255,0.08);
+    --text-muted: #cbd5e1;
+    --accent: #0d6efd;
+}
+
+
+
+/* =========================
+   GENERAL BODY
+   ========================= */
+body {
+    background-color: var(--bg-main);
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+/* =========================
+   NAVBAR
+   ========================= */
+.navbar {
+    background: var(--bg-surface) !important;
+    border-bottom: 1px solid var(--border-soft);
+    backdrop-filter: blur(6px);
+}
+
+
+/* =========================
+   CAROUSEL (FIXED PROPERLY)
+   ========================= */
+
+/* Make carousel look like a hero section */
+.carousel-item {
+    height: 85vh;              /* Large, clear slides */
+    min-height: 650px;
+    position: relative;
+}
+
+.carousel-dark {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-soft);
+}
+
+
+
+/* Fill slide nicely without shrinking UI */
+.carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;         /* IMPORTANT */
+    object-position: center;   /* Keeps main content visible */
+}
+
+/* Light overlay for better contrast */
+.carousel-item::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Space below carousel */
+#carouselExample {
+    margin-bottom: 60px;
+}
+
+
+.about-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.about-card {
+    background: #ffffff;
+    border-radius: 15px;
+}
+
+.about-card p {
+    font-size: 1.05rem;
+}
+
+.about-section-dark {
+    background: var(--bg-surface);
+}
+
+.about-card-dark {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+
+.section-dark,
+.section-dark-alt {
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-soft);
+}
+
+
+.dark-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+
+/* =========================
+   FEATURE CARDS
+   ========================= */
+/* Compact dark cards */
+/* =========================
+   UNIFIED DARK CARDS
+   ========================= */
+.dark-card,
+.feature-card-dark {
+    background: var(--bg-card);       /* Unified dark card background */
+    border: 1px solid var(--border-soft); /* Soft border for separation */
+    border-radius: 14px;              /* Rounded corners */
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3); /* Subtle lift */
+    color: var(--text-light);         /* Unified text color */
+    padding: 1.25rem;
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover effect */
+.dark-card:hover,
+.feature-card-dark:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+}
+
+/* Title inside cards */
+.dark-card h5,
+.feature-card-dark h5 {
+    color: var(--primary);  /* Highlighted title color */
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 1.05rem;
+}
+
+/* Paragraph inside cards */
+.dark-card p,
+.feature-card-dark p {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Card icons */
+.feature-card-dark img,
+.dark-card img {
+    filter: invert(1);
+    width: 42px;
+    height: 42px;
+    margin-bottom: 12px;
+    opacity: 0.9;
+}
+
+/* =========================
+   FOOTER
+   ========================= */
+.footer-dark {
+    background: #080c12;
+    border-top: 1px solid var(--border-soft);
+}
+
+
+.footer-dark h4,
+.footer-dark h5 {
+    margin-bottom: 12px;
+}
+
+.footer-dark p {
+    font-size: 0.95rem;
+}
+
+.footer-links a {
+    color: #cbd5e1;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 6px;
+    transition: 0.3s;
+}
+
+.footer-links a:hover {
+    color: #0d6efd;
+    padding-left: 4px;
+}
+
+.footer-bottom {
+    background-color: #0b1220;
+    font-size: 0.85rem;
+    color: #9ca3af;
+}
+
+
+/* =========================
+   BUTTONS
+   ========================= */
+.btn-primary {
+    background: linear-gradient(90deg, #007bff, #00c6ff);
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #00c6ff, #007bff);
+}
+
+.btn-success {
+    background: linear-gradient(90deg, #28a745, #85e085);
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-success:hover {
+    background: linear-gradient(90deg, #85e085, #28a745);
+}
+
+/* =========================
+   FORMS & TOAST
+   ========================= */
+.toast-body {
+    font-weight: 500;
+}
+
+input.form-control {
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+/* =========================
+   CARD SHADOW ENHANCEMENT
+   ========================= */
+.card.shadow {
+    border-radius: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card.shadow:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+}
+
+.brand-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.8rem;   /* Bigger & bold */
+    letter-spacing: 1px;
+    color: #ffffff;
+}
+

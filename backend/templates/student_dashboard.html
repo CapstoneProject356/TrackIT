@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard | TrackIT{% endblock %}
+
+{% block content %}
+<h2 class="text-center mb-4">Student Dashboard</h2>
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card shadow text-center p-3">
+            <h5>Mark Attendance</h5>
+            <p>Scan QR and mark your attendance</p>
+            <a href="/attendance" class="btn btn-primary">Go</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow text-center p-3">
+            <h5>View Reports</h5>
+            <p>Check your daily/monthly attendance</p>
+            <a href="/reports" class="btn btn-success">Go</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow text-center p-3">
+            <h5>Profile</h5>
+            <p>View or update your profile details</p>
+            <a href="#" class="btn btn-warning">Go</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

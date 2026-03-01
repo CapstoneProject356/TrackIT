@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Login | TrackIT{% endblock %}
+
+{% block content %}
+<div class="card shadow col-md-6 mx-auto mt-5">
+    <div class="card-body">
+        <h3 class="text-center mb-4">Login</h3>
+
+        <select id="role" class="form-select mb-3">
+            <option value="student">Student</option>
+            <option value="faculty">Faculty</option>
+            <option value="admin">Admin</option>
+        </select>
+
+        <div id="loginForm">
+            <input id="loginEmail" class="form-control mb-3" placeholder="Email">
+            <input id="loginPassword" type="password" class="form-control mb-3" placeholder="Password">
+            <button class="btn btn-primary w-100" onclick="login()">Login</button>
+            <p class="text-center mt-3">
+                New user? <a href="#" onclick="showRegister()">Register here</a>
+            </p>
+        </div>
+
+        <div id="registerForm" style="display:none">
+            <input id="regName" class="form-control mb-2" placeholder="Full Name">
+            <input id="regEmail" class="form-control mb-2" placeholder="Email">
+            <input id="regPassword" type="password" class="form-control mb-2" placeholder="Password">
+
+            <div id="studentFields">
+                <input id="regRoll" class="form-control mb-2" placeholder="Roll Number">
+                <input id="regDept" class="form-control mb-2" placeholder="Department">
+            </div>
+
+            <div id="facultyFields" style="display:none">
+                <input id="regEmpId" class="form-control mb-2" placeholder="Employee ID">
+                <input id="regSubject" class="form-control mb-2" placeholder="Subject">
+            </div>
+
+            <div id="adminFields" style="display:none">
+                <input id="regAdminKey" class="form-control mb-2" placeholder="Admin Secret Key">
+            </div>
+
+            <button class="btn btn-success w-100 mt-2" onclick="register()">Register</button>
+            <p class="text-center mt-3">
+                Already have an account? <a href="#" onclick="showLogin()">Login here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

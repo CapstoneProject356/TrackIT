@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Dashboard | TrackIT{% endblock %}
+
+{% block content %}
+<h2 class="text-center mb-4">Faculty Dashboard</h2>
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card shadow text-center p-3">
+            <h5>Generate QR</h5>
+            <p>Create live QR codes for attendance</p>
+            <button class="btn btn-primary" onclick="generateQR()">Generate</button>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow text-center p-3">
+            <h5>View Reports</h5>
+            <p>Check attendance of your students</p>
+            <a href="/reports" class="btn btn-success">Go</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow text-center p-3">
+            <h5>Profile</h5>
+            <p>Update your profile information</p>
+            <a href="#" class="btn btn-warning">Go</a>
+        </div>
+    </div>
+</div>
+
+<div class="mt-5 text-center">
+    <h5>Live QR Code</h5>
+    <canvas id="qrCanvas"></canvas>
+    <p id="qrTimer"></p>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script>
+function generateQR() {
+    const canvas = document.getElementById("qrCanvas");
+    const qrData = `class_id=1&timestamp=${Date.now()}`;
+    QRCode.toCanvas(canvas, qrData, { width: 200 }, function(error) {
+        if (error) console.error(error);
+        else showTimer(60);
+    });
+}
+function showTimer(seconds) {
+    const timerEl = document.getElementById("qrTimer");
+    let time = seconds;
+    const interval = setInterval(() => {
+        timerEl.innerText = `QR expires in ${time}s`;
+        time--;
+        if (time < 0) {
+            clearInterval(interval);
+            timerEl.innerText = "QR expired!";
+            const canvas = document.getElementById("qrCanvas");
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }, 1000);
+}
+</script>
+{% endblock %}
