@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Report{% endblock %}
+
+{% block content %}
+<h2 class="text-center">Daily Attendance Report</h2>
+
+<table class="table table-bordered mt-4">
+    <thead class="table-dark">
+        <tr>
+            <th>Student Name</th>
+            <th>Date</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Rahul</td>
+            <td>2026-03-06</td>
+            <td>Present</td>
+        </tr>
+    </tbody>
+</table>
+
+<a href="/reports" class="btn btn-secondary mt-3">Back</a>
+{% endblock %}

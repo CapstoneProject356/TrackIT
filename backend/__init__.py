@@ -46,6 +46,18 @@ def create_app():
     @app.route('/reports')
     def reports_page():
        return render_template('reports.html')
+   
+    @app.route('/daily_report')
+    def daily_report_page():
+        return render_template('daily_report.html')
+
+    @app.route('/weekly_report')
+    def weekly_report_page():
+        return render_template('weekly_report.html')
+
+    @app.route('/monthly_report')
+    def monthly_report_page(): 
+        return render_template('monthly_report.html')
 
     @app.route('/api/reports/daily')
     def daily_report():
