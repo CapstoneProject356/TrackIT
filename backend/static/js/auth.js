@@ -30,42 +30,89 @@ function login() {
 
 // REGISTER
 function register() {
+
+    let role = document.getElementById("role").value
+
+    // check face for student
+    if(role === "student" && !document.getElementById("faceImage").value){
+        alert("Please capture your face before registering")
+        return
+    }
+
     fetch("/auth/register", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify({
+
             name: document.getElementById("regName").value,
             email: document.getElementById("regEmail").value,
             password: document.getElementById("regPassword").value,
-            role: getRole()
+            role: role,
+
+            roll: document.getElementById("regRoll")?.value,
+            department: document.getElementById("regDept")?.value,
+
+            emp_id: document.getElementById("regEmpId")?.value,
+            subject: document.getElementById("regSubject")?.value,
+
+            admin_key: document.getElementById("regAdminKey")?.value,
+
+            face_image: document.getElementById("faceImage").value
         })
     })
+
     .then(res => res.json())
+
     .then(data => {
-        if (data.success) {
-            showToast("Registration successful! Login now.", "bg-success");
-            showLogin();
-        } else {
-            showToast(data.message, "bg-danger");
+
+        if(data.success){
+
+            alert("Registration successful")
+
+            showLogin()
+
+        }else{
+
+            alert(data.message || "Registration failed")
+
         }
-    });
+
+    })
+
+    .catch(error => {
+        console.error(error)
+        alert("Error connecting to server")
+    })
+
 }
 
 // TOAST
-function showToast(message, bg) {
-    const toastEl = document.getElementById("liveToast");
-    const toastMsg = document.getElementById("toastMsg");
+function toggleRoleFields(){
 
-    toastEl.className = `toast align-items-center text-white ${bg} border-0`;
-    toastMsg.innerText = message;
+    let role = document.getElementById("role").value
 
-    new bootstrap.Toast(toastEl).show();
+    document.getElementById("studentFields").style.display = role==="student" ? "block" : "none"
+    document.getElementById("facultyFields").style.display = role==="faculty" ? "block" : "none"
+    document.getElementById("adminFields").style.display = role==="admin" ? "block" : "none"
+
+    if(role === "student"){
+        startCamera()
+    }
 }
 
 // FORM SWITCH
-function showRegister() {
-    document.getElementById("loginForm").style.display = "none";
-    document.getElementById("registerForm").style.display = "block";
+function showRegister(){
+
+    document.getElementById("loginForm").style.display="none"
+    document.getElementById("registerForm").style.display="block"
+
+    let role = document.getElementById("role").value
+
+    if(role === "student"){
+        startCamera()
+    }
 }
 
 function showLogin() {

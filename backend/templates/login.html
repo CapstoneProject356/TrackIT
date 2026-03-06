@@ -3,53 +3,130 @@
 {% block title %}Login | TrackIT{% endblock %}
 
 {% block content %}
+
 <div class="card shadow col-md-6 mx-auto mt-5">
     <div class="card-body">
         <h3 class="text-center mb-4">Login</h3>
 
-        <select id="role" class="form-select mb-3">
-            <option value="student">Student</option>
-            <option value="faculty">Faculty</option>
-            <option value="admin">Admin</option>
-        </select>
+```
+    <select id="role" class="form-select mb-3" onchange="toggleRoleFields()">
+        <option value="student">Student</option>
+        <option value="faculty">Faculty</option>
+        <option value="admin">Admin</option>
+    </select>
 
-        <div id="loginForm">
-            <input id="loginEmail" class="form-control mb-3" placeholder="Email">
-            <input id="loginPassword" type="password" class="form-control mb-3" placeholder="Password">
-            <button class="btn btn-primary w-100" onclick="login()">Login</button>
-            <p class="text-center mt-3">
-                New user? <a href="#" onclick="showRegister()">Register here</a>
-            </p>
-        </div>
+    <!-- LOGIN -->
+    <div id="loginForm">
+        <input id="loginEmail" class="form-control mb-3" placeholder="Email">
+        <input id="loginPassword" type="password" class="form-control mb-3" placeholder="Password">
+        <button type="button" class="btn btn-primary w-100" onclick="login()">Login</button>
 
-        <div id="registerForm" style="display:none">
-            <input id="regName" class="form-control mb-2" placeholder="Full Name">
-            <input id="regEmail" class="form-control mb-2" placeholder="Email">
-            <input id="regPassword" type="password" class="form-control mb-2" placeholder="Password">
-
-            <div id="studentFields">
-                <input id="regRoll" class="form-control mb-2" placeholder="Roll Number">
-                <input id="regDept" class="form-control mb-2" placeholder="Department">
-            </div>
-
-            <div id="facultyFields" style="display:none">
-                <input id="regEmpId" class="form-control mb-2" placeholder="Employee ID">
-                <input id="regSubject" class="form-control mb-2" placeholder="Subject">
-            </div>
-
-            <div id="adminFields" style="display:none">
-                <input id="regAdminKey" class="form-control mb-2" placeholder="Admin Secret Key">
-            </div>
-
-            <button class="btn btn-success w-100 mt-2" onclick="register()">Register</button>
-            <p class="text-center mt-3">
-                Already have an account? <a href="#" onclick="showLogin()">Login here</a>
-            </p>
-        </div>
+        <p class="text-center mt-3">
+            New user? <a href="#" onclick="showRegister()">Register here</a>
+        </p>
     </div>
+
+    <!-- REGISTER -->
+    <div id="registerForm" style="display:none">
+
+        <input id="regName" class="form-control mb-2" placeholder="Full Name">
+        <input id="regEmail" class="form-control mb-2" placeholder="Email">
+        <input id="regPassword" type="password" class="form-control mb-2" placeholder="Password">
+
+        <!-- STUDENT FIELDS -->
+        <div id="studentFields">
+            <input id="regRoll" class="form-control mb-2" placeholder="Roll Number">
+            <input id="regDept" class="form-control mb-2" placeholder="Department">
+
+            <label class="mt-2">Register Face</label>
+
+            <video id="video" width="100%" height="200" autoplay class="border rounded"></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+
+            <button type="button" class="btn btn-secondary w-100 mt-2" onclick="captureFace()">Capture Face</button>
+
+            <!-- Preview -->
+            <div id="capturedFaceContainer" class="mt-2"></div>
+
+            <input type="hidden" id="faceImage">
+        </div>
+
+        <!-- FACULTY -->
+        <div id="facultyFields" style="display:none">
+            <input id="regEmpId" class="form-control mb-2" placeholder="Employee ID">
+            <input id="regSubject" class="form-control mb-2" placeholder="Subject">
+        </div>
+
+        <!-- ADMIN -->
+        <div id="adminFields" style="display:none">
+            <input id="regAdminKey" class="form-control mb-2" placeholder="Admin Secret Key">
+        </div>
+
+        <button type="button" class="btn btn-success w-100 mt-2" onclick="register()">Register</button>
+
+        <p class="text-center mt-3">
+            Already have an account? <a href="#" onclick="showLogin()">Login here</a>
+        </p>
+    </div>
+</div>
+```
+
 </div>
 {% endblock %}
 
 {% block scripts %}
+
 <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+
+<script>
+
+let video = document.getElementById("video")
+
+// Start camera
+function startCamera(){
+    navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+        video.srcObject = stream
+    })
+}
+
+// Capture face
+function captureFace(){
+
+    let canvas = document.getElementById("canvas")
+    let context = canvas.getContext("2d")
+
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+
+    context.drawImage(video, 0, 0)
+
+    let imageData = canvas.toDataURL("image/png")
+
+    // store image for registration
+    document.getElementById("faceImage").value = imageData
+
+    // show preview
+    let container = document.getElementById("capturedFaceContainer")
+    container.innerHTML = "<img src='"+imageData+"' width='150' class='mt-2 border rounded'>"
+
+    alert("Face captured successfully")
+}
+
+// Show fields based on role
+function toggleRoleFields(){
+
+    let role = document.getElementById("role").value
+
+    document.getElementById("studentFields").style.display = role==="student" ? "block" : "none"
+    document.getElementById("facultyFields").style.display = role==="faculty" ? "block" : "none"
+    document.getElementById("adminFields").style.display = role==="admin" ? "block" : "none"
+
+    if(role === "student"){
+        startCamera()
+    }
+}
+
+</script>
+
 {% endblock %}

@@ -1,17 +1,24 @@
 const video = document.getElementById("video");
 
 // Start camera when page loads
-async function startCamera() {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: false
-        });
-        video.srcObject = stream;
-    } catch (error) {
-        document.getElementById("faceStatus").innerText =
-            "Camera access denied or not available";
+function startCamera(){
+
+    const video = document.getElementById("video")
+
+    if(!video){
+        console.log("Video element not found")
+        return
     }
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+        video.srcObject = stream
+        video.play()
+    })
+    .catch(err => {
+        alert("Camera access denied or not available")
+        console.error(err)
+    })
 }
 
 // Capture face image
@@ -35,6 +42,7 @@ function captureFace() {
 
     // Convert to image
     const imageData = canvas.toDataURL('image/png');
+    document.getElementById("faceImage").value = imageData;
 
     // Show captured image
     const container = document.getElementById('capturedFaceContainer');
