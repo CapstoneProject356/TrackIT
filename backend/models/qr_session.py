@@ -1,4 +1,4 @@
-from backend.app import db
+from backend.database.db_init import db
 from datetime import datetime, timedelta
 
 class QRSession(db.Model):

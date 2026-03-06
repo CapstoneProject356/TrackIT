@@ -5,7 +5,11 @@ flask-migrate
 flask-wtf
 email-validator
 werkzeug
-stripe
 python-dotenv
 gunicorn
-git
+geopy
+opencv-python
+face-recognition
+numpy
+pillow
+qrcode

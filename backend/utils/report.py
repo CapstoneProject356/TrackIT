@@ -9,3 +9,18 @@ def calculate_percentage(student_id):
         return 0
 
     return round((attended / total_sessions) * 100, 2)
+def get_defaulters(threshold=75):
+    from backend.models.user import User
+    students = User.query.filter_by(role="student").all()
+
+    defaulters = []
+
+    for student in students:
+        percentage = calculate_percentage(student.id)
+        if percentage < threshold:
+            defaulters.append({
+                "name": student.username,
+                "percentage": percentage
+            })
+
+    return defaulters
