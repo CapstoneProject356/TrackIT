@@ -10,7 +10,13 @@ function startCamera(){
         return
     }
 
-    navigator.mediaDevices.getUserMedia({ video: true })
+    navigator.mediaDevices.getUserMedia({
+    video: {
+        width: 640,
+        height: 480,
+        facingMode: "user"
+    }
+})
     .then(stream => {
         video.srcObject = stream
         video.play()
@@ -21,43 +27,71 @@ function startCamera(){
     })
 }
 
+
 // Capture face image
 function captureFace() {
+
     const video = document.getElementById('video');
 
-    // Make sure video is ready
-    if (video.readyState < 2) { // HAVE_CURRENT_DATA
+    if (video.readyState < 2) {
         alert("Video not ready yet. Please wait a moment.");
         return;
     }
 
-    // Create canvas to grab frame
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 320; // fallback width
-    canvas.height = video.videoHeight || 240; // fallback height
-    const ctx = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
 
-    // Draw the video frame
+    const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Convert to image
     const imageData = canvas.toDataURL('image/png');
+
     document.getElementById("faceImage").value = imageData;
 
-    // Show captured image
     const container = document.getElementById('capturedFaceContainer');
-    container.innerHTML = ''; // clear previous
+    container.innerHTML = '';
+
     const img = document.createElement('img');
     img.src = imageData;
-    img.width = 320; 
+    img.width = 320;
     img.height = 240;
     img.className = 'border rounded';
     container.appendChild(img);
 
-    // Update status
     document.getElementById('faceStatus').innerText = "Face captured successfully!";
+
+    // Send image for verification
+    verifyFace(canvas);
 }
 
+
+// Send captured image to backend
+function verifyFace(canvas){
+
+    canvas.toBlob(async function(blob){
+
+        const formData = new FormData();
+        formData.append("user_id", localStorage.getItem("user_id"));   // replace with logged-in user id
+        formData.append("image", blob, "face.jpg");
+
+        const response = await fetch("/face/verify", {
+             method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        console.log("Face verification:", data);
+
+        if(data.face_verified){
+            document.getElementById("faceStatus").innerText = "Face Verified ✅";
+        }else{
+            document.getElementById("faceStatus").innerText = "Face Not Verified ❌";
+        }
+
+    }, "image/jpeg");
+}
 
 
 // Auto start camera

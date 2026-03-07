@@ -1,19 +1,18 @@
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, jsonify
+from backend.database.db_init import db
 from .config import Config
-
-db = SQLAlchemy()
 
 def create_app():
 
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    db.init_app(app)
+    app.config['SECRET_KEY'] = 'secret'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///trackit.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Register blueprints
-    from backend.routes.auth_routes import auth_bp
-    app.register_blueprint(auth_bp, url_prefix="/auth")
+    # Initialize DB
+    db.init_app(app)
 
     # ================= FRONTEND ROUTES =================
 
@@ -49,7 +48,7 @@ def create_app():
     def reports_page():
         return render_template('reports.html')
 
-    # ================= API ROUTES =================
+    # ================= SAMPLE REPORT API =================
 
     @app.route('/api/reports/daily')
     def daily_report():

@@ -35,7 +35,6 @@ def verify_and_mark_attendance(student_id, session_id, face_image, latitude, lon
     db.session.commit()
 
     return {"success": "Attendance marked"}
-
 @attendance_bp.route("/mark_attendance", methods=["POST"])
 def mark_attendance():
 
@@ -44,6 +43,9 @@ def mark_attendance():
     latitude = request.form.get("latitude")
     longitude = request.form.get("longitude")
     face_image = request.files.get("face_image")
+
+    if not student_id or not face_image:
+        return jsonify({"error": "Missing data"})
 
     result = verify_and_mark_attendance(
         student_id,

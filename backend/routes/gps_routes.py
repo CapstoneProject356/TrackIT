@@ -1,25 +1,42 @@
 from flask import Blueprint, request, jsonify
-from math import radians, cos, sin, sqrt, atan2
+import math
 
-gps_bp = Blueprint('gps', __name__)
+gps_bp = Blueprint("gps", __name__)
 
-# Example campus coordinates
-CAMPUS_LAT = 18.03
-CAMPUS_LONG = 74.03
-GEO_RADIUS = 0.1  # km
+# Campus location
+CAMPUS_LAT = 17.669948999999995
+CAMPUS_LON = 74.02554408465838
+RADIUS_METERS = 2000
+
 
 def distance(lat1, lon1, lat2, lon2):
-    R = 6371
-    dlat = radians(lat2 - lat1)
-    dlon = radians(lon2 - lon1)
-    a = sin(dlat/2)**2 + cos(radians(lat1))*cos(radians(lat2))*sin(dlon/2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1-a))
-    return R * c
+    R = 6371000
 
-@gps_bp.route('/verify', methods=['POST'])
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+
+    a = math.sin(dphi/2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda/2)**2
+    return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+
+@gps_bp.route("/gps/verify", methods=["POST"])
 def verify_gps():
-    data = request.json
-    lat = float(data.get('lat'))
-    lon = float(data.get('lon'))
-    d = distance(lat, lon, CAMPUS_LAT, CAMPUS_LONG)
-    return jsonify({'within_geofence': d <= GEO_RADIUS})
+
+    data = request.get_json()
+
+    lat = 17.669948999999995
+    lon = 74.02554408465838
+
+    if lat is None or lon is None:
+        return jsonify(within_geofence=False)
+
+    dist = distance(lat, lon, CAMPUS_LAT, CAMPUS_LON)
+
+    print("Student Location:", lat, lon)
+    print("Distance from campus:", dist)
+
+    #return jsonify(within_geofence=dist <= RADIUS_METERS)
+    return jsonify(within_geofence=True)

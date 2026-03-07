@@ -2,7 +2,7 @@
 let gpsVerified = false;
 let qrVerified = false;
 let faceVerified = false;
-let qrToken = null;
+//let qrToken = null;
 
 // ----------------- GPS Verification -----------------
 function verifyGPS() {
@@ -64,17 +64,35 @@ function scanQR(input) {
 
 // ----------------- Face Capture -----------------
 function captureFace() {
+
     const video = document.getElementById("video");
+
+    if (video.videoWidth === 0) {
+        showToast("Camera not ready yet. Try again.", "warning");
+        return;
+    }
 
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
+
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
 
+    // Show captured image (for debugging)
+    const img = document.createElement("img");
+    img.src = canvas.toDataURL("image/png");
+    img.width = 200;
+
+    const container = document.getElementById("capturedFaceContainer");
+    container.innerHTML = "";
+    container.appendChild(img);
+
     canvas.toBlob(async (blob) => {
+
         const formData = new FormData();
         formData.append("image", blob);
+        formData.append("user_id", localStorage.getItem("user_id"))
 
         const res = await fetch('/face/verify', {
             method: 'POST',
@@ -82,43 +100,58 @@ function captureFace() {
         });
 
         const data = await res.json();
+
         faceVerified = data.face_verified;
 
-        document.getElementById("faceStatus").innerText = faceVerified 
-            ? "Face verified ✅" 
-            : "Face verification failed ❌";
+        document.getElementById("faceStatus").innerText =
+            faceVerified ? "Face verified ✅" : "Face verification failed ❌";
 
-        showToast(faceVerified ? "Face verified!" : "Face verification failed", faceVerified ? "success" : "danger");
+        showToast(
+            faceVerified ? "Face verified!" : "Face verification failed",
+            faceVerified ? "success" : "danger"
+        );
+
     }, "image/png");
 }
-
 // ----------------- Mark Attendance -----------------
-async function markAttendance() {
-    if (!gpsVerified || !qrVerified || !faceVerified) {
-        showToast("Complete all steps before marking attendance", "warning");
-        return;
+async function markAttendance(){
+
+    if(!gpsVerified || !qrVerified || !faceVerified){
+        showToast("Complete all steps first", "warning")
+        return
     }
 
-    const res = await fetch('/attendance/mark', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            student_id: 1, // Replace with logged-in user id
-            class_id: 1,   // Replace with current class id
-            lat: 0,
-            lon: 0,
-            qr_token: qrToken,
-            face_verified: faceVerified
-        })
-    });
+    const canvas = document.createElement("canvas")
+    const video = document.getElementById("video")
 
-    const data = await res.json();
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
 
-    document.getElementById("attendanceStatus").innerText = data.status === "success" 
-        ? "Attendance marked successfully ✅"
-        : "Attendance failed ❌";
+    const ctx = canvas.getContext("2d")
+    ctx.drawImage(video,0,0)
 
-    showToast(data.status === "success" ? "Attendance marked!" : "Failed to mark attendance", data.status === "success" ? "success" : "danger");
+    const blob = await new Promise(resolve =>
+        canvas.toBlob(resolve,"image/png")
+    )
+
+    const formData = new FormData();
+
+formData.append("image", blob);
+formData.append("user_id", localStorage.getItem("user_id"));
+
+const res = await fetch('/attendance/mark', {
+    method: 'POST',
+    body: formData
+})
+
+    const data = await res.json()
+
+    if(data.success){
+        showToast("Attendance marked successfully","success")
+    }else{
+        showToast(data.error,"danger")
+    }
+
 }
 
 // ----------------- Toast Helper -----------------
@@ -135,5 +168,17 @@ function showToast(message, type = "primary") {
 
 // ----------------- Initialize Video Stream -----------------
 navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => { document.getElementById("video").srcObject = stream; })
-    .catch(err => showToast("Camera not accessible", "danger"));
+.then(stream => {
+
+    const video = document.getElementById("video");
+    video.srcObject = stream;
+
+    video.onloadedmetadata = () => {
+        video.play();
+    };
+
+})
+.catch(err => {
+    console.error(err);
+    showToast("Camera not accessible", "danger");
+});

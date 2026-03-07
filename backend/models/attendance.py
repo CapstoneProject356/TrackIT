@@ -7,7 +7,7 @@ class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    session_id = db.Column(db.Integer, db.ForeignKey('qr_session.id'), nullable=False)
+    session_id = db.Column(db.Integer, nullable=True)
 
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 

@@ -1,17 +1,129 @@
-// ================= ROLE =================
-function getRole(){
-    return document.getElementById("role").value;
-}
+// Wait until page loads
+document.addEventListener("DOMContentLoaded", function () {
 
-// ================= LOGIN =================
-function login(){
+    // ================= ROLE =================
+    function getRole(){
+        return document.getElementById("role").value;
+    }
 
-    fetch("/auth/login",{
+    // ================= LOGIN =================
+    window.login = function(){
+
+        fetch("/auth/login",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                email:document.getElementById("loginEmail").value,
+                password:document.getElementById("loginPassword").value
+            })
+        })
+
+        .then(res=>res.json())
+        .then(data=>{
+
+            if(data.success){
+
+                alert("Login successful");
+                localStorage.setItem("user_id", data.user_id)
+                if(data.role==="student") location.href="/student_dashboard";
+                if(data.role==="faculty") location.href="/faculty_dashboard";
+                if(data.role==="admin") location.href="/admin_dashboard";
+
+            }else{
+                alert(data.message);
+            }
+
+        })
+    }
+
+    // ================= REGISTER =================
+    window.register = function(){
+
+    let name = document.getElementById("regName").value.trim()
+    let email = document.getElementById("regEmail").value.trim()
+    let password = document.getElementById("regPassword").value.trim()
+    let role = getRole()
+
+    let roll = document.getElementById("regRoll")?.value.trim()
+    let dept = document.getElementById("regDept")?.value.trim()
+    let emp_id = document.getElementById("regEmpId")?.value.trim()
+    let subject = document.getElementById("regSubject")?.value.trim()
+    let admin_key = document.getElementById("regAdminKey")?.value.trim()
+    let face_image = document.getElementById("faceImage")?.value
+
+
+    // NAME VALIDATION
+    if(name === ""){
+        alert("Name is required")
+        return
+    }
+
+    // EMAIL VALIDATION
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if(!emailPattern.test(email)){
+        alert("Enter a valid email address")
+        return
+    }
+
+    // PASSWORD VALIDATION
+    const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/
+
+    if(!passwordPattern.test(password)){
+        alert("Password must be 8+ characters with letter, number, and symbol")
+        return
+    }
+
+    // STUDENT VALIDATION
+    if(role==="student"){
+
+        if(roll==="" || dept===""){
+            alert("Please fill Roll Number and Department")
+            return
+        }
+
+        if(!face_image){
+            alert("Please capture face before registering")
+            return
+        }
+
+    }
+
+    // FACULTY VALIDATION
+    if(role==="faculty"){
+
+        if(emp_id==="" || subject===""){
+            alert("Please fill Employee ID and Subject")
+            return
+        }
+
+    }
+
+    // ADMIN VALIDATION
+    if(role==="admin"){
+
+        if(admin_key===""){
+            alert("Admin secret key required")
+            return
+        }
+
+    }
+
+
+    fetch("/auth/register",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-            email:document.getElementById("loginEmail").value,
-            password:document.getElementById("loginPassword").value
+            name:name,
+            email:email,
+            password:password,
+            role:role,
+            roll:roll,
+            department:dept,
+            emp_id:emp_id,
+            subject:subject,
+            admin_key:admin_key,
+            face_image:face_image
         })
     })
 
@@ -19,63 +131,10 @@ function login(){
     .then(data=>{
 
         if(data.success){
-
-            alert("Login successful");
-
-            if(data.role==="student") location.href="/student_dashboard";
-            if(data.role==="faculty") location.href="/faculty_dashboard";
-            if(data.role==="admin") location.href="/admin_dashboard";
-
-        }else{
-            alert(data.message);
-        }
-
-    })
-}
-
-// ================= REGISTER =================
-function register(){
-
-    let role = getRole()
-
-    let body = {
-
-        name:document.getElementById("regName").value,
-        email:document.getElementById("regEmail").value,
-        password:document.getElementById("regPassword").value,
-        role:role,
-
-        roll:document.getElementById("regRoll")?.value,
-        department:document.getElementById("regDept")?.value,
-
-        emp_id:document.getElementById("regEmpId")?.value,
-        subject:document.getElementById("regSubject")?.value,
-
-        admin_key:document.getElementById("regAdminKey")?.value,
-
-        face_image:document.getElementById("faceImage")?.value
-    }
-
-    if(role==="student" && !body.face_image){
-        alert("Please capture face before registering")
-        return
-    }
-
-    fetch("/auth/register",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(body)
-    })
-
-    .then(res=>res.json())
-    .then(data=>{
-
-        if(data.success){
-
             alert("Registration successful")
             showLogin()
-
-        }else{
+        }
+        else{
             alert(data.message)
         }
 
@@ -83,63 +142,98 @@ function register(){
 
 }
 
-// ================= FORM SWITCH =================
-function showRegister(){
+    // ================= FORM SWITCH =================
+    window.showRegister = function(){
 
-    document.getElementById("loginForm").style.display="none"
-    document.getElementById("registerForm").style.display="block"
+        document.getElementById("loginForm").style.display="none"
+        document.getElementById("registerForm").style.display="block"
 
-}
+        document.getElementById("formTitle").innerText="Register"
 
-function showLogin(){
+        let role=document.getElementById("role").value
 
-    document.getElementById("registerForm").style.display="none"
-    document.getElementById("loginForm").style.display="block"
+        if(role==="student"){
+            startCamera()
+        }
 
-}
+    }
 
-// ================= CAMERA =================
-let video=document.getElementById("video")
+    window.showLogin = function(){
 
-function startCamera(){
+        document.getElementById("registerForm").style.display="none"
+        document.getElementById("loginForm").style.display="block"
 
-    navigator.mediaDevices.getUserMedia({video:true})
+        document.getElementById("formTitle").innerText="Login"
 
-    .then(stream=>{
-        video.srcObject=stream
-    })
+        stopCamera()
 
-    .catch(err=>{
-        console.log(err)
-    })
-}
+    }
 
-function captureFace(){
+    // ================= CAMERA =================
+    let video=document.getElementById("video")
+    let stream=null
 
-    let canvas=document.getElementById("canvas")
-    let ctx=canvas.getContext("2d")
+    function startCamera(){
 
-    canvas.width=video.videoWidth
-    canvas.height=video.videoHeight
+        if(!video){
+            console.log("Video element not found")
+            return
+        }
 
-    ctx.drawImage(video,0,0)
+        navigator.mediaDevices.getUserMedia({video:true})
 
-    let image=canvas.toDataURL("image/png")
+        .then(s=>{
+            stream=s
+            video.srcObject=stream
+        })
 
-    document.getElementById("faceImage").value=image
+        .catch(err=>{
+            console.log(err)
+        })
+    }
 
-    alert("Face captured")
-}
+    function stopCamera(){
 
-// ================= ROLE CHANGE =================
-document.getElementById("role").addEventListener("change",function(){
+        if(stream){
+            stream.getTracks().forEach(track => track.stop())
+        }
 
-    let role=this.value
+    }
 
-    document.getElementById("studentFields").style.display=role==="student"?"block":"none"
-    document.getElementById("facultyFields").style.display=role==="faculty"?"block":"none"
-    document.getElementById("adminFields").style.display=role==="admin"?"block":"none"
+    // ================= CAPTURE FACE =================
+    window.captureFace = function(){
 
-    if(role==="student") startCamera()
+        let canvas=document.getElementById("canvas")
+        let ctx=canvas.getContext("2d")
+
+        canvas.width=video.videoWidth
+        canvas.height=video.videoHeight
+
+        ctx.drawImage(video,0,0)
+
+        let image=canvas.toDataURL("image/png")
+
+        document.getElementById("faceImage").value=image
+
+        alert("Face captured")
+
+    }
+
+    // ================= ROLE CHANGE =================
+    let roleSelect = document.getElementById("role")
+
+    if(roleSelect){
+
+        roleSelect.addEventListener("change",function(){
+
+            let role=this.value
+
+            document.getElementById("studentFields").style.display=role==="student"?"block":"none"
+            document.getElementById("facultyFields").style.display=role==="faculty"?"block":"none"
+            document.getElementById("adminFields").style.display=role==="admin"?"block":"none"
+
+        })
+
+    }
 
 })
