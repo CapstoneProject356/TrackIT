@@ -5,6 +5,7 @@ from .config import Config
 db = SQLAlchemy()
 
 def create_app():
+
     app = Flask(__name__)
     app.config.from_object(Config)
 
@@ -14,7 +15,8 @@ def create_app():
     from backend.routes.auth_routes import auth_bp
     app.register_blueprint(auth_bp, url_prefix="/auth")
 
-    # Frontend routes
+    # ================= FRONTEND ROUTES =================
+
     @app.route('/')
     def home():
         return render_template('index.html')
@@ -34,34 +36,29 @@ def create_app():
     @app.route('/admin_dashboard')
     def admin_dashboard():
         return render_template('admin_dashboard.html')
-    
+
     @app.route('/attendance')
     def attendance_page():
-       return render_template('attendance.html')
-   
+        return render_template('attendance.html')
+
     @app.route('/about')
     def about_page():
-       return render_template('about.html')
+        return render_template('about.html')
 
     @app.route('/reports')
     def reports_page():
-       return render_template('reports.html')
-   
-    @app.route('/daily_report')
-    def daily_report_page():
-        return render_template('daily_report.html')
+        return render_template('reports.html')
 
-    @app.route('/weekly_report')
-    def weekly_report_page():
-        return render_template('weekly_report.html')
-
-    @app.route('/monthly_report')
-    def monthly_report_page(): 
-        return render_template('monthly_report.html')
+    # ================= API ROUTES =================
 
     @app.route('/api/reports/daily')
     def daily_report():
-    # Query DB and return JSON
-        return jsonify([...])
+
+        data = [
+            {"name": "Student 1", "status": "Present"},
+            {"name": "Student 2", "status": "Absent"}
+        ]
+
+        return jsonify(data)
 
     return app
