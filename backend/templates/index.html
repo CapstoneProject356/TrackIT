@@ -1,144 +1,72 @@
-<!--
-cd TrackIT
-.venv\Scripts\activate
-flask run
- -->
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>TrackIT - Smart Attendance</title>
-
-    <!-- Bootstrap CSS -->
-     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
-    
-</head>
-<body>
-
-{# NAVBAR #}
-
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-    <div class="container">
-        <!-- Logo and Brand -->
-        <a class="navbar-brand d-flex align-items-center" href="/">
-            <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="TrackIT Logo" height="40" class="me-2">
-            <span class="brand-text">TrackIT</span>
-        </a>
-
-        <!-- Toggler for mobile -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <!-- Navbar Links -->
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto fw-semibold">
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/login">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/attendance">Attendance</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/reports">Reports</a>
-                </li>
-                
-                <!-- New links -->
- <li class="nav-item">
-    <a class="nav-link text-white" href="/about">About Us</a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link text-white" href="#contact">Contact</a>
-</li>
-
-
-
-        </div>
-    </div>
-</nav>
-
-
-<style>
-/* Navbar hover effect */
-.navbar-nav .nav-link:hover {
-    color: #0d6efd; /* Bright blue on hover */
-    text-decoration: underline;
-    transition: 0.3s;
-}
-
-/* Brand hover effect */
-.navbar-brand:hover {
-    transform: scale(1.05);
-    transition: 0.3s;
-}
-</style>
-
+{% block content %}
 
 <main>
-<!-- CAROUSEL -->
+
+<!-- ================= CAROUSEL ================= -->
 <section class="carousel-dark py-4">
     <div class="container">
 
-    <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+        <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
 
-        <div class="carousel-inner">
+            <div class="carousel-inner">
 
-            <div class="carousel-item active">
-                <img src="{{ url_for('static', filename='assets/slide1.png') }}" class="d-block w-100" alt="Slide 1">
+                <div class="carousel-item active">
+                    <img src="{{ url_for('static', filename='assets/slide1.png') }}" 
+                         class="d-block w-100 img-fluid carousel-img" alt="Slide 1">
+                </div>
+
+                <div class="carousel-item">
+                    <img src="{{ url_for('static', filename='assets/slide2.png') }}" 
+                         class="d-block w-100 img-fluid carousel-img" alt="Slide 2">
+                </div>
+
+                <div class="carousel-item">
+                    <img src="{{ url_for('static', filename='assets/slide3.png') }}" 
+                         class="d-block w-100 img-fluid carousel-img" alt="Slide 3">
+                </div>
+
+                <div class="carousel-item">
+                    <img src="{{ url_for('static', filename='assets/slide4.png') }}" 
+                         class="d-block w-100 img-fluid carousel-img" alt="Slide 4">
+                </div>
+
+                <div class="carousel-item">
+                    <img src="{{ url_for('static', filename='assets/slide5.png') }}" 
+                         class="d-block w-100 img-fluid carousel-img" alt="Slide 5">
+                </div>
+
             </div>
 
-            <div class="carousel-item">
-                <img src="{{ url_for('static', filename='assets/slide2.png') }}" class="d-block w-100" alt="Slide 2">
-            </div>
+            <!-- Controls -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
 
-            <div class="carousel-item">
-                <img src="{{ url_for('static', filename='assets/slide3.png') }}" class="d-block w-100" alt="Slide 3">
-            </div>
-
-            <div class="carousel-item">
-                <img src="{{ url_for('static', filename='assets/slide4.png') }}" class="d-block w-100" alt="Slide 4">
-            </div>
-
-            <div class="carousel-item">
-                <img src="{{ url_for('static', filename='assets/slide5.png') }}" class="d-block w-100" alt="Slide 5">
-            </div>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
 
         </div>
 
-        <!-- CONTROLS -->
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-        </button>
-
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-        </button>
-
-    </div>
     </div>
 </section>
 
 
-<!-- ABOUT US -->
- <section id="about" class="about-section-dark py-5">
+<!-- ================= ABOUT SECTION ================= -->
 <section class="about-section-dark py-5">
     <div class="container">
         <div class="row align-items-center">
 
             <!-- Text -->
-            <div class="col-md-6 mb-4 mb-md-0">
+            <div class="col-lg-6 col-md-12 mb-4">
                 <h6 class="text-primary fw-semibold mb-2">WHO WE ARE</h6>
+
                 <h2 class="fw-bold text-white mb-3">
                     Smart. Secure. Reliable Attendance.
                 </h2>
+
                 <p class="text-light fs-5">
                     TrackIT is an intelligent attendance management system built to
                     eliminate proxy attendance and manual inefficiencies. By combining
@@ -148,10 +76,11 @@ flask run
                 </p>
             </div>
 
-            <!-- Highlight Card -->
-            <div class="col-md-6">
+            <!-- Card -->
+            <div class="col-lg-6 col-md-12">
                 <div class="about-card-dark p-4 text-center">
                     <h3 class="fw-bold text-primary mb-3">Why TrackIT?</h3>
+
                     <p class="text-light mb-2">✔ Eliminates proxy attendance</p>
                     <p class="text-light mb-2">✔ Real-time verification</p>
                     <p class="text-light mb-2">✔ Secure & automated system</p>
@@ -164,33 +93,36 @@ flask run
 </section>
 
 
+<!-- ================= HOW IT WORKS ================= -->
 <section class="section-dark py-5">
     <div class="container text-center">
+
         <h2 class="fw-bold text-white mb-4">How TrackIT Works</h2>
+
         <div class="row g-4">
 
-            <div class="col-md-3">
+            <div class="col-lg-3 col-md-6 col-12">
                 <div class="dark-card p-4">
                     <h5 class="text-primary">Step 1</h5>
                     <p class="text-light">User logs in securely to the system</p>
                 </div>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-lg-3 col-md-6 col-12">
                 <div class="dark-card p-4">
                     <h5 class="text-primary">Step 2</h5>
                     <p class="text-light">GPS & Face verification is performed</p>
                 </div>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-lg-3 col-md-6 col-12">
                 <div class="dark-card p-4">
                     <h5 class="text-primary">Step 3</h5>
                     <p class="text-light">Live QR code is scanned</p>
                 </div>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-lg-3 col-md-6 col-12">
                 <div class="dark-card p-4">
                     <h5 class="text-primary">Step 4</h5>
                     <p class="text-light">Attendance stored & reported</p>
@@ -198,178 +130,89 @@ flask run
             </div>
 
         </div>
+
     </div>
 </section>
 
-<section class="section-dark-alt py-5">
+
+<!-- ================= FEATURES ================= -->
+<section class="section-dark py-5">
     <div class="container">
-        <h2 class="fw-bold text-white text-center mb-4">Why Choose TrackIT?</h2>
-        <div class="row text-center g-4">
 
-            <div class="col-md-4">
-                <div class="dark-card p-4">
-                    <h5 class="text-primary">Accuracy</h5>
-                    <p class="text-light">Eliminates fake & proxy attendance</p>
+        <div class="row g-4 text-center">
+
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="card feature-card-dark p-4">
+                    <img src="https://img.icons8.com/ios/64/000000/gps-device.png" class="mb-3 feature-icon">
+                    <h5>GPS Verification</h5>
+                    <p>Prevent proxy attendance using live GPS tracking.</p>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="dark-card p-4">
-                    <h5 class="text-primary">Security</h5>
-                    <p class="text-light">Multi-level verification system</p>
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="card feature-card-dark p-4">
+                    <img src="https://img.icons8.com/ios/64/000000/face-id.png" class="mb-3 feature-icon">
+                    <h5>Face Recognition</h5>
+                    <p>AI-based identity verification for secure attendance.</p>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="dark-card p-4">
-                    <h5 class="text-primary">Automation</h5>
-                    <p class="text-light">No manual attendance needed</p>
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="card feature-card-dark p-4">
+                    <img src="https://img.icons8.com/ios-filled/64/000000/qr-code.png" class="mb-3 feature-icon">
+                    <h5>Live QR Code</h5>
+                    <p>Generate time-limited QR codes for attendance.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="card feature-card-dark p-4">
+                    <img src="https://img.icons8.com/ios-filled/64/000000/report-card.png" class="mb-3 feature-icon">
+                    <h5>Attendance Reports</h5>
+                    <p>Generate daily and monthly reports easily.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="card feature-card-dark p-4">
+                    <img src="https://img.icons8.com/ios-filled/64/000000/user.png" class="mb-3 feature-icon">
+                    <h5>Profile Management</h5>
+                    <p>Update profile and account information.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-12">
+                <div class="card feature-card-dark p-4">
+                    <img src="https://img.icons8.com/ios-filled/64/000000/admin-settings-male.png" class="mb-3 feature-icon">
+                    <h5>Admin Controls</h5>
+                    <p>Manage users and permissions securely.</p>
                 </div>
             </div>
 
         </div>
+
     </div>
 </section>
 
 
-  <!-- FEATURES -->
-   <section class="section-dark py-5">
-    <div class="container">
-<div class="container my-5">
-    <div class="row g-4 text-center">
-        <!-- GPS Verification -->
-        <div class="col-md-4">
-            <div class="card feature-card-dark p-4 text-center">
-
-                <img src="https://img.icons8.com/ios/64/000000/gps-device.png"  alt="GPS Icon" class="mb-3 feature-icon">               
-                <h5 class="card-title">GPS Verification</h5>
-                <p class="card-text">Prevent proxy attendance using live GPS tracking.</p>
-            </div>
-        </div>
-
-        <!-- Face Recognition -->
-        <div class="col-md-4">
-            <div class="card feature-card-dark p-4 text-center">
-
-                <img src="https://img.icons8.com/ios/64/000000/face-id.png"  alt="Face Icon"  class="mb-3 feature-icon">
-                <h5 class="card-title">Face Recognition</h5>
-                <p class="card-text">AI-based identity verification for secure attendance.</p>
-            </div>
-        </div>
-
-        <!-- Live QR Code -->
-        <div class="col-md-4">
-            <div class="card feature-card-dark p-4 text-center">
-
-                <img src="https://img.icons8.com/ios-filled/64/000000/qr-code.png" alt="QR Icon" class="mb-3 feature-icon">
-                <h5 class="card-title">Live QR Code</h5>
-                <p class="card-text">Generate time-limited secure QR codes for attendance.</p>
-            </div>
-        </div>
-
-        <!-- Reports -->
-        <div class="col-md-4">
-            <div class="card feature-card-dark p-4 text-center">
-
-                <img src="https://img.icons8.com/ios-filled/64/000000/report-card.png" alt="Report Icon" class="mb-3 feature-icon">
-                <h5 class="card-title">Attendance Reports</h5>
-                <p class="card-text">Generate daily, monthly, and student-wise reports easily.</p>
-            </div>
-        </div>
-
-        <!-- Profile Management -->
-        <div class="col-md-4">
-            <div class="card feature-card-dark p-4 text-center">
-
-                <img src="https://img.icons8.com/ios-filled/64/000000/user.png" alt="Profile Icon" class="mb-3 feature-icon">
-                <h5 class="card-title">Profile Management</h5>
-                <p class="card-text">Update your profile and account information seamlessly.</p>
-            </div>
-        </div>
-
-        <!-- Admin Controls -->
-        <div class="col-md-4">
-            <div class="card feature-card-dark p-4 text-center">
-
-                <img src="https://img.icons8.com/ios-filled/64/000000/admin-settings-male.png" alt="Admin Icon" class="mb-3 feature-icon">
-                <h5 class="card-title">Admin Controls</h5>
-                <p class="card-text">Manage users, system settings, and permissions securely.</p>
-            </div>
-        </div>
-    </div>
-</div>
-</div>
-</section>
-
+<!-- ================= TECHNOLOGY ================= -->
 <section class="section-dark py-5">
     <div class="container text-center">
+
         <h2 class="fw-bold text-white mb-4">Technology Stack</h2>
+
         <div class="row g-4">
 
-            <div class="col-md-3"><p class="text-light">⚙ Flask (Backend)</p></div>
-            <div class="col-md-3"><p class="text-light">🎨 HTML, CSS, Bootstrap</p></div>
-            <div class="col-md-3"><p class="text-light">🤖 Face Recognition (AI)</p></div>
-            <div class="col-md-3"><p class="text-light">📍 GPS & QR Verification</p></div>
+            <div class="col-md-3 col-6"><p class="text-light">⚙ Flask</p></div>
+            <div class="col-md-3 col-6"><p class="text-light">🎨 HTML, CSS, Bootstrap</p></div>
+            <div class="col-md-3 col-6"><p class="text-light">🤖 Face Recognition</p></div>
+            <div class="col-md-3 col-6"><p class="text-light">📍 GPS & QR</p></div>
 
         </div>
+
     </div>
 </section>
-
-<section class="section-dark-alt py-5">
-    <div class="container">
-        <h2 class="fw-bold text-white text-center mb-4">Use Cases</h2>
-        <ul class="text-light fs-5">
-            <li>Educational institutions & colleges</li>
-            <li>Corporate offices & training sessions</li>
-            <li>Workshops, seminars & events</li>
-            <li>Online-offline hybrid classrooms</li>
-        </ul>
-    </div>
-</section>
-
 
 </main>
 
-<!-- FOOTER -->
-<footer id="contact" class="footer-dark mt-auto">
-    <div class="container py-5">
-        <div class="row">
-            <!-- Brand -->
-            <div class="col-md-4 mb-4">
-                <h4 class="fw-bold">TrackIT</h4>
-                <p class="text-muted">
-                    Smart attendance system using GPS, Face Recognition, and QR verification
-                    to ensure accuracy and transparency.
-                </p>
-            </div>
-
-            <!-- Quick Links -->
-            <div class="col-md-4 mb-4">
-                <h5 class="fw-semibold">Quick Links</h5>
-                <ul class="list-unstyled footer-links">
-                    <li><a href="/login">Login</a></li>
-                    <li><a href="/attendance">Attendance</a></li>
-                    <li><a href="/reports">Reports</a></li>
-                </ul>
-            </div>
-
-            <!-- Contact / Info -->
-            <div class="col-md-4 mb-4">
-                <h5 class="fw-semibold">Contact</h5>
-                <p class="mb-1">📧 support@trackit.com</p>
-                <p class="mb-1">📍 Computer Engineering Dept</p>
-                <p class="mb-1">© 2025 TrackIT</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom bar -->
-    <div class="footer-bottom text-center py-3">
-        Designed with ❤️ for Smart Attendance
-    </div>
-</footer>
-
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}

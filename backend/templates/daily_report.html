@@ -4,7 +4,7 @@
 
 {% block content %}
 <h2 class="text-center">Daily Attendance Report</h2>
-
+<div class="table-responsive">
 <table class="table table-bordered mt-4">
     <thead class="table-dark">
         <tr>
@@ -13,14 +13,26 @@
             <th>Status</th>
         </tr>
     </thead>
-    <tbody>
-        <tr>
-            <td>Rahul</td>
-            <td>2026-03-06</td>
-            <td>Present</td>
-        </tr>
-    </tbody>
-</table>
+   <tbody>
 
+{% for record in records %}
+
+<tr>
+    <td>{{ record.student_id }}</td>
+    <td>{{ record.timestamp.strftime("%Y-%m-%d") }}</td>
+    <td>
+        {% if record.face_verified %}
+            Present
+        {% else %}
+            Not Verified
+        {% endif %}
+    </td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+</table>
+</div>
 <a href="/reports" class="btn btn-secondary mt-3">Back</a>
 {% endblock %}

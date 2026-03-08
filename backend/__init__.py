@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify
 from backend.database.db_init import db
 from .config import Config
+from flask import session, redirect, url_for
 
 def create_app():
 
@@ -47,6 +48,29 @@ def create_app():
     @app.route('/reports')
     def reports_page():
         return render_template('reports.html')
+    
+    @app.route('/dashboard')
+    def dashboard_page():
+        role = session.get("role")
+
+        if role == "student":
+            return render_template("student_dashboard.html")
+
+        elif role == "faculty":
+            return render_template("faculty_dashboard.html")
+
+        elif role == "admin":
+           return render_template("admin_dashboard.html")
+
+        else:
+           return redirect(url_for("login_page"))
+    
+    @app.route("/logout") 
+    def logout():
+        session.clear()
+        return redirect(url_for("auth.login"))
+
+    
 
     # ================= SAMPLE REPORT API =================
 

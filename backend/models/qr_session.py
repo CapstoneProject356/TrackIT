@@ -13,7 +13,7 @@ class QRSession(db.Model):
     # Session expiry (10 minutes)
     expires_at = db.Column(
         db.DateTime,
-        default=lambda: datetime.utcnow() + timedelta(minutes=10)
+        default=lambda: datetime.utcnow() + timedelta(minutes=30)
     )
 
     active = db.Column(db.Boolean, default=True)

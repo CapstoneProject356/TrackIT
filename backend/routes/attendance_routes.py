@@ -1,14 +1,15 @@
-from flask import Blueprint, request, jsonify
-
+from flask import Blueprint, request, jsonify, render_template
 from backend.models.attendance import Attendance
 from backend.models.qr_session import QRSession
 from backend.database.db_init import db
 from backend.utils.gps_checker import verify_gps
 from backend.utils.face_recognition import verify_face
-from datetime import datetime
+from datetime import datetime, timedelta
 
 attendance_bp = Blueprint("attendance", __name__)
 
+
+# ---------------- MARK ATTENDANCE ---------------- #
 
 def verify_and_mark_attendance(student_id, session_id, face_image, latitude, longitude):
 
@@ -30,11 +31,21 @@ def verify_and_mark_attendance(student_id, session_id, face_image, latitude, lon
     if not verify_face(student_id, face_image):
         return {"error": "Face not matched"}
 
-    attendance = Attendance(student_id=student_id, session_id=session_id)
+    attendance = Attendance(
+        student_id=student_id,
+        session_id=session_id,
+        gps_lat=latitude,
+        gps_long=longitude,
+        face_verified=True,
+        timestamp=datetime.utcnow()
+    )
+
     db.session.add(attendance)
     db.session.commit()
 
     return {"success": "Attendance marked"}
+
+
 @attendance_bp.route("/mark_attendance", methods=["POST"])
 def mark_attendance():
 
@@ -56,3 +67,55 @@ def mark_attendance():
     )
 
     return jsonify(result)
+
+
+# ---------------- DAILY REPORT ---------------- #
+
+@attendance_bp.route("/daily_report")
+def daily_report():
+
+    today = datetime.utcnow().date()
+
+    records = Attendance.query.filter(
+        db.func.date(Attendance.timestamp) == today
+    ).all()
+
+    return render_template(
+        "daily_report.html",
+        records=records
+    )
+
+
+# ---------------- WEEKLY REPORT ---------------- #
+
+@attendance_bp.route("/weekly_report")
+def weekly_report():
+
+    week_ago = datetime.utcnow() - timedelta(days=7)
+
+    records = Attendance.query.filter(
+        Attendance.timestamp >= week_ago
+    ).all()
+
+    return render_template(
+        "weekly_report.html",
+        records=records
+    )
+
+
+# ---------------- MONTHLY REPORT ---------------- #
+
+@attendance_bp.route("/monthly_report")
+def monthly_report():
+
+    today = datetime.utcnow()
+    start_month = today.replace(day=1)
+
+    records = Attendance.query.filter(
+        Attendance.timestamp >= start_month
+    ).all()
+
+    return render_template(
+        "monthly_report.html",
+        records=records
+    )

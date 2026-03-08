@@ -17,8 +17,10 @@ class Attendance(db.Model):
     qr_token = db.Column(db.String(100), nullable=False)
     face_verified = db.Column(db.Boolean, default=False)
 
-    # 🔥 ADD THIS
     face_image = db.Column(db.LargeBinary, nullable=True)
+
+    # relationship
+    student = db.relationship("User", backref="attendance_records")
 
     __table_args__ = (
         db.UniqueConstraint('student_id', 'session_id', name='unique_attendance'),

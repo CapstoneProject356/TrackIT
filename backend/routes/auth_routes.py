@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session, redirect
 from backend.database.db_init import db
 from ..models.user import User
 import base64
@@ -97,6 +97,17 @@ def login():
     user = User.query.filter_by(email=data['email']).first()
 
     if user and user.check_password(data['password']):
+
+        # STORE LOGIN SESSION
+        session["user_id"] = user.id
+        session["role"] = user.role
+        session["name"] = user.name
+
         return jsonify(success=True, role=user.role, user_id=user.id)
 
     return jsonify(success=False, message="Invalid credentials")
+
+@auth_bp.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")  # Redirect to home page after logout

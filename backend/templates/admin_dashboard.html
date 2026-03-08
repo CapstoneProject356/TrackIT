@@ -5,26 +5,22 @@
 {% block content %}
 <h2 class="text-center mb-4">Admin Dashboard</h2>
 <div class="row g-4">
-    <div class="col-md-4">
-        <div class="card shadow text-center p-3">
+
+    <div class="col-md-6">
+        <div class="card shadow text-center p-4">
             <h5>Manage Users</h5>
-            <p>Add/Edit/Delete Students & Faculty</p>
-            <a href="#" class="btn btn-primary">Manage</a>
+            <p>Add / Edit / Delete Students and Faculty</p>
+            <a href="/admin/users" class="btn btn-primary">Open</a>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card shadow text-center p-3">
-            <h5>View Reports</h5>
-            <p>Overall attendance analytics</p>
-            <a href="/reports" class="btn btn-success">Go</a>
+
+    <div class="col-md-6">
+        <div class="card shadow text-center p-4">
+            <h5>System Configuration</h5>
+            <p>Configure attendance parameters</p>
+            <a href="/admin/settings" class="btn btn-warning">Open</a>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card shadow text-center p-3">
-            <h5>System Settings</h5>
-            <p>Configure system parameters</p>
-            <a href="#" class="btn btn-warning">Configure</a>
-        </div>
-    </div>
+
 </div>
 {% endblock %}

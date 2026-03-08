@@ -63,6 +63,19 @@ body {
     background: rgba(0, 0, 0, 0.1);
 }
 
+.carousel-img{
+height:500px;
+object-fit:cover;
+}
+
+@media (max-width:768px){
+
+.carousel-img{
+height:250px;
+}
+
+}
+
 /* Space below carousel */
 #carouselExample {
     margin-bottom: 60px;
@@ -169,7 +182,28 @@ body {
     border-top: 1px solid var(--border-soft);
 }
 
+.footer-links a{
+    color:#adb5bd;
+    text-decoration:none;
+}
 
+.footer-links a:hover{
+    color:#ffffff;
+    text-decoration:underline;
+}
+
+/* Mobile footer */
+@media (max-width:768px){
+
+.footer-dark{
+text-align:center;
+}
+
+.footer-links{
+padding-left:0;
+}
+
+}
 .footer-dark h4,
 .footer-dark h5 {
     margin-bottom: 12px;

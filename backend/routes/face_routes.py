@@ -60,4 +60,4 @@ def verify_face():
     print("Face distance:", distance)
     print("Match result:", match)
 
-    return jsonify(face_verified=match)
+    return jsonify(face_verified=bool(match))

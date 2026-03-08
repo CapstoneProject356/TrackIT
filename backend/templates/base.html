@@ -1,15 +1,10 @@
-<!--
-cd TrackIT
-Envo\Scripts\activate
-python -m backend.app -->
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}TrackIT{% endblock %}</title>
-
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#212529">
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
 
@@ -18,7 +13,7 @@ python -m backend.app -->
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
             display: flex;
@@ -57,6 +52,7 @@ python -m backend.app -->
 </head>
 <body>
 
+<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container">
         <!-- Logo and Brand -->
@@ -74,25 +70,57 @@ python -m backend.app -->
         <!-- Navbar Links -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto fw-semibold">
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/login">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/attendance">Attendance</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/reports">Reports</a>
-                </li>
-                
-                <!-- New links -->
-<li class="nav-item">
-    <a class="nav-link text-white" href="/about">About Us</a>
-</li>
 
-<li class="nav-item">
-    <a class="nav-link text-white" href="#contact">Contact</a>
-</li>
+                {% if not session.get("user_id") %}
+                    <!-- Not Logged In -->
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/about">About Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#contact">Contact</a>
+                    </li>
 
+                {% else %}
+                    <!-- Student Links -->
+                    {% if session.get("role") == "student" %}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/attendance">Attendance</a>
+                        </li>
+                    {% endif %}
+
+                    <!-- Teacher Links -->
+                    {% if session.get("role") == "teacher" %}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/generate-qr">Generate QR</a>
+                        </li>
+                    {% endif %}
+
+                    <!-- Common Links -->
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/about">About Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#contact">Contact</a>
+                    </li>
+
+                    <!-- User Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-warning" href="#" role="button" data-bs-toggle="dropdown">
+                            {{ session.get('name') or 'User' }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </li>
+                {% endif %}
+
+            </ul>
         </div>
     </div>
 </nav>
@@ -107,34 +135,36 @@ python -m backend.app -->
 <!-- FOOTER -->
 <footer id="contact" class="footer-dark mt-auto">
     <div class="container py-5">
-        <div class="row">
-            <!-- Brand -->
-            <div class="col-md-4 mb-4">
-                <h4 class="fw-bold">TrackIT</h4>
-                <p class="text-muted">
-                    Smart attendance system using GPS, Face Recognition, and QR verification
-                    to ensure accuracy and transparency.
-                </p>
-            </div>
+        <div class="row text-center text-md-start">
 
-            <!-- Quick Links -->
-            <div class="col-md-4 mb-4">
-                <h5 class="fw-semibold">Quick Links</h5>
-                <ul class="list-unstyled footer-links">
-                    <li><a href="/login">Login</a></li>
-                    <li><a href="/attendance">Attendance</a></li>
-                    <li><a href="/reports">Reports</a></li>
-                </ul>
-            </div>
+    <!-- Brand -->
+    <div class="col-lg-4 col-md-6 col-12 mb-4">
+        <h4 class="fw-bold">TrackIT</h4>
+        <p class="text-muted">
+            Smart attendance system using GPS, Face Recognition, and QR verification
+            to ensure accuracy and transparency.
+        </p>
+    </div>
 
-            <!-- Contact / Info -->
-            <div class="col-md-4 mb-4">
-                <h5 class="fw-semibold">Contact</h5>
-                <p class="mb-1">📧 support@trackit.com</p>
-                <p class="mb-1">📍 Computer Engineering Dept</p>
-                <p class="mb-1">© 2025 TrackIT</p>
-            </div>
-        </div>
+    <!-- Quick Links -->
+    <div class="col-lg-4 col-md-6 col-12 mb-4">
+        <h5 class="fw-semibold">Quick Links</h5>
+        <ul class="list-unstyled footer-links">
+            <li><a href="/login">Login</a></li>
+            <li><a href="/attendance">Attendance</a></li>
+            <li><a href="/reports">Reports</a></li>
+        </ul>
+    </div>
+
+    <!-- Contact -->
+    <div class="col-lg-4 col-md-12 col-12 mb-4">
+        <h5 class="fw-semibold">Contact</h5>
+        <p class="mb-1">📧 support@trackit.com</p>
+        <p class="mb-1">📍 Computer Engineering Dept</p>
+        <p class="mb-1">© 2026 TrackIT</p>
+    </div>
+
+</div>
     </div>
 
     <!-- Bottom bar -->
@@ -142,7 +172,6 @@ python -m backend.app -->
         Designed with ❤️ for Smart Attendance
     </div>
 </footer>
-
 
 <!-- TOAST -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index:11">
@@ -161,3 +190,27 @@ python -m backend.app -->
 </body>
 </html>
 
+<script>
+async function logout() {
+    const res = await fetch('/auth/logout');
+    // If you updated logout to return JSON
+    try {
+        const data = await res.json();
+        if(data.success){
+            showToast("Logged out successfully","success");
+            setTimeout(()=>{ window.location.href="/login"; }, 1000);
+        }
+    } catch(e) {
+        // If logout now redirects, just redirect manually
+        window.location.href = "/login";
+    }
+}
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/static/sw.js")
+    .then(function() {
+        console.log("Service Worker Registered");
+    });
+}
+
+</script>

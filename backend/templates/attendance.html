@@ -14,17 +14,20 @@
 </div>
 
 <div class="card mb-3 shadow-sm">
-    <div class="card-body">
+    <div class="card-body text-center">
         <h5>Step 2: Scan QR Code</h5>
-        <input type="file" accept="image/*" onchange="scanQR(this)">
+
+        <div id="qr-reader" style="width:300px; margin:auto;"></div>
+        <button class="btn btn-primary mt-2" onclick="startQRScanner()">Start QR Scanner</button>
         <p id="qrStatus" class="mt-2"></p>
+
     </div>
 </div>
 
 <div class="card mb-3 shadow-sm">
     <div class="card-body text-center">
         <h5>Step 3: Face Verification</h5>
-        <video id="video" width="320" height="240" autoplay muted playsinline class="border rounded"></video>
+        <video id="video" width="320" height="240" autoplay playsinline class="border rounded"></video>
         <div class="mt-2">
             <button class="btn btn-success" onclick="captureFace()">Capture Face</button>
         </div>
@@ -41,5 +44,6 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://unpkg.com/html5-qrcode"></script>
 <script src="{{ url_for('static', filename='js/attendance.js') }}"></script>
 {% endblock %}

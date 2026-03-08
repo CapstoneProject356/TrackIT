@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+
+<h2 class="text-center mb-4">Manage Users</h2>
+
+<div class="row g-4">
+
+    <!-- Students Card -->
+    <div class="col-md-6">
+        <div class="card shadow text-center p-4">
+            <h4>Students</h4>
+            <p>View all registered students</p>
+            <a href="/admin/students" class="btn btn-primary">View Students</a>
+        </div>
+    </div>
+
+    <!-- Faculty Card -->
+    <div class="col-md-6">
+        <div class="card shadow text-center p-4">
+            <h4>Faculty</h4>
+            <p>View all faculty members</p>
+            <a href="/admin/faculty" class="btn btn-success">View Faculty</a>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

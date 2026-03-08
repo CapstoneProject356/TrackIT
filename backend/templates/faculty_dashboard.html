@@ -38,29 +38,61 @@
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
 <script>
+
 function generateQR() {
+
     const canvas = document.getElementById("qrCanvas");
-    const qrData = `class_id=1&timestamp=${Date.now()}`;
+
+    // Expiry timestamp (30 minutes from now)
+    const expiry = Date.now() + (30 * 60 * 1000);
+
+    const qrData = `class_id=1|${expiry}`;
+
     QRCode.toCanvas(canvas, qrData, { width: 200 }, function(error) {
-        if (error) console.error(error);
-        else showTimer(60);
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        // Start 30 minute timer
+        showTimer(1800);
+
     });
 }
-function showTimer(seconds) {
+
+
+function showTimer(totalSeconds) {
+
     const timerEl = document.getElementById("qrTimer");
-    let time = seconds;
+
+    let time = totalSeconds;
+
     const interval = setInterval(() => {
-        timerEl.innerText = `QR expires in ${time}s`;
+
+        const minutes = Math.floor(time / 60);
+        const seconds = time % 60;
+
+        timerEl.innerText = `QR expires in ${minutes}m ${seconds < 10 ? "0" : ""}${seconds}s`;
+
         time--;
+
         if (time < 0) {
+
             clearInterval(interval);
+
             timerEl.innerText = "QR expired!";
+
             const canvas = document.getElementById("qrCanvas");
             const ctx = canvas.getContext("2d");
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
+
     }, 1000);
 }
+
 </script>
 {% endblock %}

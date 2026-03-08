@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Students{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Students List</h2>
+
+<table class="table table-striped shadow">
+
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Email</th>
+<th>Action</th>
+</tr>
+
+{% for s in students %}
+
+<tr>
+<td>{{s.id}}</td>
+<td>{{s.name}}</td>
+<td>{{s.email}}</td>
+
+<td>
+<a href="/admin/delete_user/{{s.id}}" 
+class="btn btn-danger btn-sm"
+onclick="return confirm('Delete this student?')">
+Delete
+</a>
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

@@ -11,16 +11,17 @@ from backend.routes.auth_routes import auth_bp
 from backend.routes.attendance_routes import attendance_bp
 from backend.routes.gps_routes import gps_bp
 from backend.routes.qr_routes import qr_bp
+from backend.routes.admin_routes import admin_bp
 
 app = create_app()
 
 # Register blueprints
 app.register_blueprint(face_bp)
 app.register_blueprint(gps_bp)
-app.register_blueprint(qr_bp)
+app.register_blueprint(qr_bp, url_prefix="/qr")
 app.register_blueprint(attendance_bp)
 app.register_blueprint(auth_bp, url_prefix="/auth")
-
+app.register_blueprint(admin_bp)
 
 if __name__ == "__main__":
 
