@@ -107,7 +107,7 @@ function onQRScanned(decodedText) {
     if(qrVerified) return;
 
     let token = decodedText;
-    if(decodedText.includes("token=")) token = decodedText.split("token=")[1].trim();
+    if(decodedText.includes("token=")) token = decodedText.trim();
 
     fetch("/qr/verify", {
         method: "POST",

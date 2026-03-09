@@ -49,6 +49,8 @@ def generate_qr(class_id):
     })
     
 # ---------------- VERIFY QR ---------------- #
+
+# ---------------- VERIFY QR ---------------- #
 @qr_bp.route('/verify', methods=['POST'])
 def verify_qr():
     data = request.get_json()
@@ -61,22 +63,18 @@ def verify_qr():
 
     token = token.strip()
 
-    # Try exact match first
+    # Query session by exact token and active=True
     session = QRSession.query.filter_by(token=token, active=True).first()
-
-    # If no exact match, try partial match (just in case front-end trims differently)
-    if not session:
-        session = QRSession.query.filter(QRSession.token.like(f"%{token}%"), QRSession.active==True).first()
-
     print("SESSION FOUND:", session)  # Debug
 
     if not session:
         return jsonify(valid=False)
 
-    # Check expiry
+    # Expiry check
     if datetime.utcnow() > session.expires_at:
         session.active = False
         db.session.commit()
         return jsonify(valid=False)
 
+    # Everything okay, return valid=True and session_id
     return jsonify(valid=True, session_id=session.id)
