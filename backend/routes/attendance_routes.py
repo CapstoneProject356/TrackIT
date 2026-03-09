@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, session
 from backend.models.attendance import Attendance
 from backend.models.qr_session import QRSession
 from backend.database.db_init import db
@@ -6,31 +6,47 @@ from backend.utils.gps_checker import verify_gps
 from backend.utils.face_recognition import verify_face
 from datetime import datetime, timedelta
 
-attendance_bp = Blueprint("attendance", __name__)
+# Blueprint with prefix
+attendance_bp = Blueprint("attendance", __name__, url_prefix="/attendance")
 
 
-# ---------------- MARK ATTENDANCE ---------------- #
+# ---------------- VERIFY & MARK ATTENDANCE ---------------- #
 
 def verify_and_mark_attendance(student_id, session_id, face_image, latitude, longitude):
 
+    # Check session
     session = QRSession.query.get(session_id)
 
-    if not session or not session.is_active:
+    if not session:
+        return {"error": "Invalid session"}
+
+    if not session.active:
         return {"error": "Session expired"}
 
+    # Check expiry
     if datetime.utcnow() > session.expires_at:
-        session.is_active = False
+        session.active = False
         db.session.commit()
-        return {"error": "QR expired"}
+        return {"error": "QR code expired"}
 
-    # GPS Check
+    # Prevent duplicate attendance
+    existing = Attendance.query.filter_by(
+        student_id=student_id,
+        session_id=session_id
+    ).first()
+
+    if existing:
+        return {"error": "Attendance already marked"}
+
+    # GPS Verification
     if not verify_gps(latitude, longitude):
-        return {"error": "Not inside classroom"}
+        return {"error": "You are not inside the classroom"}
 
-    # Face Check
+    # Face Verification
     if not verify_face(student_id, face_image):
-        return {"error": "Face not matched"}
+        return {"error": "Face verification failed"}
 
+    # Save attendance
     attendance = Attendance(
         student_id=student_id,
         session_id=session_id,
@@ -43,10 +59,12 @@ def verify_and_mark_attendance(student_id, session_id, face_image, latitude, lon
     db.session.add(attendance)
     db.session.commit()
 
-    return {"success": "Attendance marked"}
+    return {"success": "Attendance marked successfully"}
 
 
-@attendance_bp.route("/mark_attendance", methods=["POST"])
+# ---------------- MARK ATTENDANCE ROUTE ---------------- #
+
+@attendance_bp.route("/mark", methods=["POST"])
 def mark_attendance():
 
     student_id = request.form.get("student_id")
@@ -55,8 +73,9 @@ def mark_attendance():
     longitude = request.form.get("longitude")
     face_image = request.files.get("face_image")
 
-    if not student_id or not face_image:
-        return jsonify({"error": "Missing data"})
+    # Validate input
+    if not student_id or not session_id or not face_image:
+        return jsonify({"error": "Missing required data"}), 400
 
     result = verify_and_mark_attendance(
         student_id,

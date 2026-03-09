@@ -5,6 +5,7 @@
 {% block content %}
 <h2 class="text-center mb-4">Mark Attendance</h2>
 
+<!-- Step 1: GPS Verification -->
 <div class="card mb-3 shadow-sm">
     <div class="card-body">
         <h5>Step 1: GPS Verification</h5>
@@ -13,17 +14,22 @@
     </div>
 </div>
 
+<!-- Step 2: QR Verification -->
 <div class="card mb-3 shadow-sm">
     <div class="card-body text-center">
         <h5>Step 2: Scan QR Code</h5>
 
         <div id="qr-reader" style="width:300px; margin:auto;"></div>
         <button class="btn btn-primary mt-2" onclick="startQRScanner()">Start QR Scanner</button>
-        <p id="qrStatus" class="mt-2"></p>
 
+        <p class="mt-2">Or upload QR image:</p>
+        <input type="file" id="qrFileInput" accept="image/*" onchange="scanQR(this)" />
+
+        <p id="qrStatus" class="mt-2"></p>
     </div>
 </div>
 
+<!-- Step 3: Face Verification -->
 <div class="card mb-3 shadow-sm">
     <div class="card-body text-center">
         <h5>Step 3: Face Verification</h5>
@@ -36,10 +42,9 @@
     </div>
 </div>
 
-
+<!-- Submit Attendance -->
 <div class="text-center mt-3">
-    <button class="btn btn-dark btn-lg" onclick="markAttendance()">Submit Attendance</button>
-    <p id="attendanceStatus" class="mt-2"></p>
+    <button class="btn btn-primary btn-lg" onclick="markAttendance()">Submit Attendance</button>
 </div>
 {% endblock %}
 

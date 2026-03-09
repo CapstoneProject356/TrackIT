@@ -1,56 +1,82 @@
-from flask import Blueprint, jsonify,request
+from flask import Blueprint, jsonify, request
 import qrcode, io, base64
 from datetime import datetime, timedelta
+import uuid
+from backend.models.qr_session import QRSession
+from backend.database.db_init import db
 
-qr_bp = Blueprint('qr', __name__)
+qr_bp = Blueprint('qr', __name__, url_prefix="/qr")
 
-# Validate QR token
-def is_qr_valid(token_data):
-    try:
-        token_data = token_data.strip()
-        class_part, expiry_str = token_data.split("|")
-        class_id = class_part.split("=")[1]
-        expiry_time = datetime.fromisoformat(expiry_str)  # ISO format required
-        return datetime.utcnow() <= expiry_time
-    except Exception as e:
-        print("QR validation error:", e)
-        return False
 
-# Generate QR for a class
-@qr_bp.route('/generate/<class_id>')
+# ---------------- GENERATE QR ---------------- #
+# ---------------- GENERATE QR ---------------- #
+@qr_bp.route("/generate/<int:class_id>")
 def generate_qr(class_id):
-    # Set expiry 30 minutes from now
-    expiry_time = datetime.utcnow() + timedelta(minutes=30)
-    expiry_str = expiry_time.isoformat()  # Convert to ISO string
 
-    # QR format: class_id=1|2026-03-08T19:30:00
-    qr_data = f"class_id={class_id}|{expiry_str}"
+    # QR valid for 10 minutes
+    expiry_time = datetime.utcnow() + timedelta(minutes=10)
 
-    qr_img = qrcode.make(qr_data)
-    buf = io.BytesIO()
-    qr_img.save(buf, format="PNG")
-    qr_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    # Unique session ID (short 6-char string)
+    session_id = uuid.uuid4().hex[:6]
 
+    # Create token in a simple key=value format
+    token = f"class={class_id}|session={session_id}|expires={expiry_time.isoformat()}"
+
+    # Save session in DB
+    qr_session = QRSession(
+        teacher_id=1,        # replace with logged-in teacher ID
+        token=token,
+        expires_at=expiry_time,
+        active=True
+    )
+
+    db.session.add(qr_session)
+    db.session.commit()
+
+    # Generate QR image
+    qr = qrcode.make(token)
+    img_io = io.BytesIO()
+    qr.save(img_io, "PNG")
+    img_io.seek(0)
+    img_base64 = base64.b64encode(img_io.getvalue()).decode()
+
+    # Return JSON (frontend can display image directly in base64)
     return jsonify({
-        "qr_code": qr_base64,
-        "token": qr_data
+        "session_id": qr_session.id,
+        "token": token,
+        "qr_image": f"data:image/png;base64,{img_base64}",  # ready for <img src=...>
+        "expires_at": expiry_time.isoformat()
     })
-
-# Verify QR
+    
+# ---------------- VERIFY QR ---------------- #
 @qr_bp.route('/verify', methods=['POST'])
 def verify_qr():
     data = request.get_json()
     token = data.get("token")
 
+    print("TOKEN RECEIVED:", token)  # Debug
+
     if not token:
         return jsonify(valid=False)
 
-    # If token contains full URL, extract it
-    if "token=" in token:
-        token = token.split("token=")[-1]
-
     token = token.strip()
 
-    if is_qr_valid(token):
-        return jsonify(valid=True, token=token)
-    return jsonify(valid=False)
+    # Try exact match first
+    session = QRSession.query.filter_by(token=token, active=True).first()
+
+    # If no exact match, try partial match (just in case front-end trims differently)
+    if not session:
+        session = QRSession.query.filter(QRSession.token.like(f"%{token}%"), QRSession.active==True).first()
+
+    print("SESSION FOUND:", session)  # Debug
+
+    if not session:
+        return jsonify(valid=False)
+
+    # Check expiry
+    if datetime.utcnow() > session.expires_at:
+        session.active = False
+        db.session.commit()
+        return jsonify(valid=False)
+
+    return jsonify(valid=True, session_id=session.id)

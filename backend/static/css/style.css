@@ -288,3 +288,8 @@ input.form-control {
     color: #ffffff;
 }
 
+.attendance-submit {
+    font-size: 18px;
+    padding: 10px 30px;
+    border-radius: 10px;
+}
