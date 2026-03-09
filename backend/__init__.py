@@ -1,7 +1,8 @@
 from flask import Flask, render_template, jsonify
 from backend.database.db_init import db
 from .config import Config
-from flask import session, redirect, url_for
+from flask import session, request, redirect, url_for 
+from backend.models.user import User
 
 def create_app():
 
@@ -83,5 +84,94 @@ def create_app():
         ]
 
         return jsonify(data)
+    
+    # ----------------- Faculty Profile Routes -----------------
+    @app.route("/faculty/profile")
+    def faculty_profile_page():
+        return render_template("faculty_profile.html")
+
+    @app.route("/faculty/profile/get")
+    def get_faculty_profile():
+       user_id = session.get("user_id")
+       if not user_id:
+           return jsonify({"error": "Not logged in"}), 401
+
+       user = User.query.get(user_id)
+       if not user:
+           return jsonify({"error": "User not found"}), 404
+
+       return jsonify({
+       "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        #"subject": getattr(user, "subject", "")
+    })
+
+    @app.route("/faculty/profile/update", methods=["POST"])
+    def update_faculty_profile():
+       user_id = session.get("user_id")
+       if not user_id:
+           return jsonify({"error": "Not logged in"}), 401
+
+       user = User.query.get(user_id)
+       if not user:
+           return jsonify({"error": "User not found"}), 404
+
+    # Update fields
+       user.name = request.form.get("name", user.name)
+       user.email = request.form.get("email", user.email)
+      # user.subject = request.form.get("subject", getattr(user, "subject", ""))
+
+       try:
+           db.session.commit()
+           return jsonify({"success": True})
+       except Exception as e:
+          db.session.rollback()
+          return jsonify({"success": False, "error": str(e)})
+
+
+# ----------------- Student Profile Routes -----------------
+    @app.route("/student/profile")
+    def student_profile_page():
+       return render_template("student_profile.html")
+
+    @app.route("/student/profile/get")
+    def get_student_profile():
+       user_id = session.get("user_id")
+       if not user_id:
+           return jsonify({"error": "Not logged in"}), 401
+
+       user = User.query.get(user_id)
+       if not user:
+           return jsonify({"error": "User not found"}), 404
+
+       return jsonify({
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        # "subject": getattr(user, "subject", "")
+    })
+
+    @app.route("/student/profile/update", methods=["POST"])
+    def update_student_profile():
+       user_id = session.get("user_id")
+       if not user_id:
+           return jsonify({"error": "Not logged in"}), 401
+
+       user = User.query.get(user_id)
+       if not user:
+           return jsonify({"error": "User not found"}), 404
+
+       user.name = request.form.get("name", user.name)
+       user.email = request.form.get("email", user.email)
+    # user.subject = request.form.get("subject", getattr(user, "subject", ""))
+
+       try:
+           db.session.commit()
+           return jsonify({"success": True})
+       except Exception as e:
+          db.session.rollback()
+          return jsonify({"success": False, "error": str(e)})
+
 
     return app
