@@ -1,14 +1,14 @@
 from backend.models.qr_session import QRSession
 from backend.database.db_init import db
 from datetime import datetime, timedelta
-import uuid
+import uuid, qrcode, io, base64
 from flask import current_app
 
-def generate_qr(class_id, teacher_id, expiry_minutes=10):
+def generate_qr(class_id, teacher_id):
     timestamp = int(datetime.utcnow().timestamp() * 1000)
     session_id = uuid.uuid4().hex  # full UUID
     token = f"class_id={class_id}|session={session_id}|ts={timestamp}"
-    expiry = datetime.utcnow() + timedelta(minutes=expiry_minutes)
+    expiry = datetime.utcnow() + timedelta(minutes=10)
 
     try:
         qr_session = QRSession(
