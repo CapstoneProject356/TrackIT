@@ -42,18 +42,19 @@ function verifyGPS() {
 }
 
 // ---------------- QR SCANNER (Camera) ----------------
+// ---------------- QR SCANNER (Camera) ----------------
 function startQRScanner() {
-    if(qrVerified) return;
+    if (qrVerified) return;
 
     qrScanner = new Html5Qrcode("qr-reader");
 
     Html5Qrcode.getCameras().then(devices => {
         if (!devices.length) {
-            showToast("No camera found","danger");
+            showToast("No camera found", "danger");
             return;
         }
 
-        // Prefer back camera
+        // Prefer back camera if available
         let backCamera = devices.find(cam => cam.label.toLowerCase().includes("back"));
         const cameraId = backCamera ? backCamera.id : devices[0].id;
 
@@ -64,7 +65,7 @@ function startQRScanner() {
         );
     }).catch(err => {
         console.log("Camera error:", err);
-        showToast("Camera access denied","danger");
+        showToast("Camera access denied", "danger");
     });
 }
 
@@ -75,24 +76,27 @@ async function scanQRFile(fileInput) {
 
     const reader = new FileReader();
     reader.onload = async () => {
-        const base64Image = reader.result.split(',')[1]; // Remove data prefix
+        let base64Image = reader.result;
+
+        // If the image contains "data:image/png;base64,", remove it
+        if(base64Image.includes(",")) {
+            base64Image = base64Image.split(',')[1];
+        }
 
         const res = await fetch('/qr/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: base64Image })
+            body: JSON.stringify({ token: base64Image })  // <- We'll fix this below
         });
 
         const data = await res.json();
-        if(data.valid){
+        if (data.valid) {
             qrVerified = true;
             sessionId = data.session_id;
             document.getElementById("qrStatus").innerText = "QR verified ✅";
             showToast("QR verified!", "success");
 
-            // Stop camera if active
             if(qrScanner) qrScanner.stop();
-
             startFaceCamera();
         } else {
             document.getElementById("qrStatus").innerText = "Invalid or expired QR ❌";
@@ -104,10 +108,10 @@ async function scanQRFile(fileInput) {
 
 // ---------------- QR SUCCESS HANDLER ----------------
 function onQRScanned(decodedText) {
-    if(qrVerified) return;
+    if (qrVerified) return;
 
-    let token = decodedText;
-    if(decodedText.includes("token=")) token = decodedText.trim();
+    // The QR token from backend is just the string, no data:image prefix
+    let token = decodedText.trim();
 
     fetch("/qr/verify", {
         method: "POST",
@@ -129,21 +133,6 @@ function onQRScanned(decodedText) {
             showToast("Invalid or expired QR", "danger");
         }
     });
-}
-
-// ---------------- FACE CAMERA ----------------
-async function startFaceCamera() {
-    const video = document.getElementById("video");
-    try {
-        if (faceStream) faceStream.getTracks().forEach(t => t.stop());
-
-        faceStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:"user" }, audio:false });
-        video.srcObject = faceStream;
-        video.onloadedmetadata = () => video.play();
-    } catch(err){
-        console.error(err);
-        showToast("Unable to access camera","danger");
-    }
 }
 
 // ---------------- FACE VERIFY ----------------

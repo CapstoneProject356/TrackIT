@@ -6,7 +6,7 @@ class QRSession(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     teacher_id = db.Column(db.Integer)
-    token = db.Column(db.String(255), unique=True)
+    token= db.Column(db.String(255), unique=True)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

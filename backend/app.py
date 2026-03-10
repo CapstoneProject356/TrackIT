@@ -4,7 +4,7 @@ from backend.database.db_init import db
 # IMPORT MODELS (IMPORTANT for SQLAlchemy foreign keys)
 from backend.models.user import User
 from backend.models.attendance import Attendance
-
+from backend.models.qr_session import QRSession
 # IMPORT ROUTES
 from backend.routes.face_routes import face_bp
 from backend.routes.auth_routes import auth_bp
@@ -27,6 +27,8 @@ if __name__ == "__main__":
 
     # Create tables
     with app.app_context():
-        db.create_all()
+         from backend.utils.qr_generator import generate_qr
+         generate_qr(class_id=1, teacher_id=1)
+         db.create_all()
 
     app.run(debug=True, use_reloader=False)
