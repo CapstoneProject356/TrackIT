@@ -6,6 +6,9 @@ from backend.utils.gps_checker import verify_gps
 from backend.utils.face_recognition import verify_face
 from datetime import datetime, timedelta
 from flask_login import login_required, current_user
+from sqlalchemy import extract
+from collections import defaultdict
+from backend.models.user import User
 
 # Blueprint
 attendance_bp = Blueprint("attendance", __name__, url_prefix="/attendance")
@@ -113,60 +116,92 @@ def mark_attendance():
 @attendance_bp.route("/daily_report")
 def daily_report():
     today = datetime.utcnow().date()
-
     if current_user.role == "student":
-        # Student sees only their own attendance
-        records = Attendance.query.filter(
-            db.func.date(Attendance.timestamp) == today,
-            Attendance.student_id == current_user.id
-        ).all()
+        students = [current_user]  # only self
     else:
-        # Faculty sees everyone
-        records = Attendance.query.filter(
-            db.func.date(Attendance.timestamp) == today
-        ).all()
+        students = User.query.filter_by(role="student").all()  # all students
 
-    return render_template("daily_report.html", records=records)
+    # get today's attendance
+    records_dict = {a.student_id: a for a in Attendance.query.filter(db.func.date(Attendance.timestamp) == today).all()}
 
+    summary = []
+    for student in students:
+        attendance = records_dict.get(student.id)
+        summary.append({
+            "name": student.name,
+            "date": today.strftime("%Y-%m-%d"),
+            "status": "Present" if attendance and attendance.face_verified else "Absent"
+        })
 
+    return render_template("daily_report.html", records=summary)
 # =========================================================
 # WEEKLY REPORT
 # =========================================================
 
 @attendance_bp.route("/weekly_report")
 def weekly_report():
-    week_ago = datetime.utcnow() - timedelta(days=7)
-
+    # fetch all attendance
     if current_user.role == "student":
-        records = Attendance.query.filter(
-            Attendance.timestamp >= week_ago,
-            Attendance.student_id == current_user.id
-        ).all()
+        records = Attendance.query.filter(Attendance.student_id == current_user.id).order_by(Attendance.timestamp).all()
+        students = [current_user]
     else:
-        records = Attendance.query.filter(
-            Attendance.timestamp >= week_ago
-        ).all()
+        records = Attendance.query.order_by(Attendance.timestamp).all()
+        students = User.query.filter_by(role="student").all()
 
-    return render_template("weekly_report.html", records=records)
+    # sequential weeks based on lecture dates
+    unique_weeks = sorted({r.timestamp.date() for r in records})
+    date_to_week = {date: idx+1 for idx, date in enumerate(unique_weeks)}
 
+    student_weeks = defaultdict(lambda: defaultdict(lambda: {"present": 0, "total": 0}))
+    for r in records:
+        week_num = date_to_week[r.timestamp.date()]
+        student_weeks[r.student.name][week_num]["total"] += 1
+        if r.face_verified:
+            student_weeks[r.student.name][week_num]["present"] += 1
 
+    summary = []
+    for student in students:
+        for week_num in range(1, len(unique_weeks)+1):
+            data = student_weeks[student.name].get(week_num, {"present": 0, "total": 1})
+            percent = round((data["present"]/data["total"])*100, 2) if data["total"] else 0
+            summary.append({
+                "name": student.name,
+                "week": f"Week {week_num}",
+                "percentage": percent
+            })
+
+    return render_template("weekly_report.html", records=summary)
 # =========================================================
 # MONTHLY REPORT
 # =========================================================
-
 @attendance_bp.route("/monthly_report")
 def monthly_report():
-    today = datetime.utcnow()
-    start_month = today.replace(day=1)
-
     if current_user.role == "student":
-        records = Attendance.query.filter(
-            Attendance.timestamp >= start_month,
-            Attendance.student_id == current_user.id
-        ).all()
+        records = Attendance.query.filter(Attendance.student_id == current_user.id).all()
+        students = [current_user]
     else:
-        records = Attendance.query.filter(
-            Attendance.timestamp >= start_month
-        ).all()
+        records = Attendance.query.all()
+        students = User.query.filter_by(role="student").all()
 
-    return render_template("monthly_report.html", records=records)
+    student_months = defaultdict(lambda: defaultdict(lambda: {"present": 0, "total": 0}))
+    for r in records:
+        month = r.timestamp.month
+        student_months[r.student.name][month]["total"] += 1
+        if r.face_verified:
+            student_months[r.student.name][month]["present"] += 1
+
+    months_with_lectures = sorted({r.timestamp.month for r in records})
+    month_names = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+
+    summary = []
+    for student in students:
+        for m in months_with_lectures:
+            data = student_months[student.name].get(m, {"present": 0, "total": 1})
+            percent = round((data["present"]/data["total"])*100, 2) if data["total"] else 0
+            summary.append({
+                "name": student.name,
+                "month": month_names[m-1],
+                "percentage": percent
+            })
+
+    return render_template("monthly_report.html", records=summary)

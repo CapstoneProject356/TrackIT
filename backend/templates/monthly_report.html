@@ -12,8 +12,8 @@
     <thead class="table-dark">
         <tr>
             <th>Student Name</th>
-            <th>Date</th>
-            <th>Status</th>
+            <th>Month</th>
+            <th>Attendance %</th>
         </tr>
     </thead>
 
@@ -21,19 +21,11 @@
 
     {% for record in records %}
 
-    <tr>
-        <td>{{ record.student.name }}</td>
-        <td>{{ record.timestamp.strftime("%Y-%m-%d") }}</td>
-
-        <td>
-            {% if record.face_verified %}
-                Present
-            {% else %}
-                Not Verified
-            {% endif %}
-        </td>
-    </tr>
-
+        <tr>
+            <td>{{ record.name }}</td>
+            <td>{{ record.month }}</td>
+            <td>{{ record.percentage }}%</td>
+        </tr>
     {% endfor %}
 
     </tbody>

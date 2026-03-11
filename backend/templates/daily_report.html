@@ -18,15 +18,9 @@
 {% for record in records %}
 
 <tr>
-    <td>{{ record.student.name }}</td>
-    <td>{{ record.timestamp.strftime("%Y-%m-%d") }}</td>
-    <td>
-        {% if record.face_verified %}
-            Present
-        {% else %}
-            Not Verified
-        {% endif %}
-    </td>
+    <td>{{ record.name }}</td>
+    <td>{{ record.date }}</td>
+    <td>{{ record.status }}</td>
 </tr>
 
 {% endfor %}
