@@ -27,10 +27,10 @@ def verify_gps():
 
     data = request.get_json()
 
-    lat = 17.669948999999995
-    lon = 74.02554408465838
+    lat = float(data.get("lat"))
+    lon = float(data.get("lon"))
 
-    if lat is None or lon is None:
+    if not data or "lat" not in data or "lon" not in data:
         return jsonify(within_geofence=False)
 
     dist = distance(lat, lon, CAMPUS_LAT, CAMPUS_LON)
@@ -38,5 +38,4 @@ def verify_gps():
     print("Student Location:", lat, lon)
     print("Distance from campus:", dist)
 
-    #return jsonify(within_geofence=dist <= RADIUS_METERS)
-    return jsonify(within_geofence=True)
+    return jsonify(within_geofence=dist <= RADIUS_METERS)

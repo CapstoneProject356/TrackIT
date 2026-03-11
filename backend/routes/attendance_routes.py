@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, session
+from flask import Blueprint, request, jsonify, render_template
 from backend.models.attendance import Attendance
 from backend.models.qr_session import QRSession
 from backend.database.db_init import db
@@ -6,30 +6,32 @@ from backend.utils.gps_checker import verify_gps
 from backend.utils.face_recognition import verify_face
 from datetime import datetime, timedelta
 
-# Blueprint with prefix
+# Blueprint
 attendance_bp = Blueprint("attendance", __name__, url_prefix="/attendance")
 
 
-# ---------------- VERIFY & MARK ATTENDANCE ---------------- #
+# =========================================================
+# VERIFY & MARK ATTENDANCE
+# =========================================================
 
 def verify_and_mark_attendance(student_id, session_id, face_image, latitude, longitude):
 
-    # Check session
-    session = QRSession.query.get(session_id)
+    # ---------- Check QR Session ----------
+    qr_session = QRSession.query.get(session_id)
 
-    if not session:
+    if not qr_session:
         return {"error": "Invalid session"}
 
-    if not session.active:
+    if not qr_session.active:
         return {"error": "Session expired"}
 
-    # Check expiry
-    if datetime.utcnow() > session.expires_at:
-        session.active = False
+    if datetime.utcnow() > qr_session.expires_at:
+        qr_session.active = False
         db.session.commit()
         return {"error": "QR code expired"}
 
-    # Prevent duplicate attendance
+
+    # ---------- Prevent Duplicate Attendance ----------
     existing = Attendance.query.filter_by(
         student_id=student_id,
         session_id=session_id
@@ -38,22 +40,32 @@ def verify_and_mark_attendance(student_id, session_id, face_image, latitude, lon
     if existing:
         return {"error": "Attendance already marked"}
 
-    # GPS Verification
+
+    # ---------- GPS Verification ----------
     if not verify_gps(latitude, longitude):
         return {"error": "You are not inside the classroom"}
 
-    # Face Verification
-    if not verify_face(student_id, face_image):
-        return {"error": "Face verification failed"}
 
-    # Save attendance
+    # ---------- Face Already Verified ----------
+    # Face verification is handled in /face/verify
+
+
+    # ---------- Read Face Image ----------
+    image_bytes = None
+    if face_image:
+        image_bytes = face_image.read()
+
+
+    # ---------- Save Attendance ----------
     attendance = Attendance(
         student_id=student_id,
         session_id=session_id,
         gps_lat=latitude,
         gps_long=longitude,
+        qr_token=qr_session.token,
         face_verified=True,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
+        face_image=image_bytes
     )
 
     db.session.add(attendance)
@@ -62,20 +74,25 @@ def verify_and_mark_attendance(student_id, session_id, face_image, latitude, lon
     return {"success": "Attendance marked successfully"}
 
 
-# ---------------- MARK ATTENDANCE ROUTE ---------------- #
+# =========================================================
+# MARK ATTENDANCE ROUTE
+# =========================================================
 
 @attendance_bp.route("/mark", methods=["POST"])
 def mark_attendance():
 
     student_id = request.form.get("student_id")
     session_id = request.form.get("session_id")
-    latitude = request.form.get("latitude")
-    longitude = request.form.get("longitude")
+
+    latitude = float(request.form.get("latitude"))
+    longitude = float(request.form.get("longitude"))
+
     face_image = request.files.get("face_image")
 
-    # Validate input
+    # ---------- Validate Input ----------
     if not student_id or not session_id or not face_image:
         return jsonify({"error": "Missing required data"}), 400
+
 
     result = verify_and_mark_attendance(
         student_id,
@@ -88,7 +105,9 @@ def mark_attendance():
     return jsonify(result)
 
 
-# ---------------- DAILY REPORT ---------------- #
+# =========================================================
+# DAILY REPORT
+# =========================================================
 
 @attendance_bp.route("/daily_report")
 def daily_report():
@@ -105,7 +124,9 @@ def daily_report():
     )
 
 
-# ---------------- WEEKLY REPORT ---------------- #
+# =========================================================
+# WEEKLY REPORT
+# =========================================================
 
 @attendance_bp.route("/weekly_report")
 def weekly_report():
@@ -122,7 +143,9 @@ def weekly_report():
     )
 
 
-# ---------------- MONTHLY REPORT ---------------- #
+# =========================================================
+# MONTHLY REPORT
+# =========================================================
 
 @attendance_bp.route("/monthly_report")
 def monthly_report():

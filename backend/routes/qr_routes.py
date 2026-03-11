@@ -2,7 +2,6 @@ from flask import Blueprint, jsonify
 import qrcode, io, base64
 from datetime import datetime, timedelta
 import uuid
-from backend.utils.qr_generator import generate_qr
 from backend.models.qr_session import QRSession
 from backend.database.db_init import db
 
@@ -10,7 +9,7 @@ qr_bp = Blueprint('qr', __name__, url_prefix="/qr")
 
 # ---------------- GENERATE QR ---------------- #
 @qr_bp.route("/generate/<int:class_id>")
-def generate_qr(class_id):
+def generate_qr_route(class_id):
     # Generate a fully unique token
     teacher_id = 3
     session_id = uuid.uuid4().hex
@@ -55,22 +54,28 @@ from flask import request
 
 @qr_bp.route("/verify", methods=["POST"])
 def verify_qr():
+
     data = request.get_json()
+
     if not data or "token" not in data:
         return jsonify(valid=False)
 
-    token = data["token"].strip()  # remove extra spaces
-    print("TOKEN RECEIVED:", repr(token))
-    # Find the session
-    session = QRSession.query.filter_by(token=token, active=True).first()
+    token = data["token"].strip()
 
-    if not session:
+    print("TOKEN RECEIVED:", repr(token))
+
+    qr_session = QRSession.query.filter_by(token=token, active=True).first()
+
+    if not qr_session:
+        print("SESSION FOUND: None")
         return jsonify(valid=False)
 
-    # Check expiry
-    if datetime.utcnow() > session.expires_at:
-        session.active = False
+    # expiry check
+    if datetime.utcnow() > qr_session.expires_at:
+        qr_session.active = False
         db.session.commit()
         return jsonify(valid=False)
 
-    return jsonify(valid=True, session_id=session.id)
+    print("SESSION FOUND:", qr_session.id)
+
+    return jsonify(valid=True, session_id=qr_session.id)

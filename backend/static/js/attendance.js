@@ -71,68 +71,106 @@ function startQRScanner() {
 
 // ---------------- QR SCANNER (File Upload) ----------------
 async function scanQRFile(fileInput) {
+
     const file = fileInput.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-        let base64Image = reader.result;
+    const html5QrCode = new Html5Qrcode("qr-reader");
 
-        // If the image contains "data:image/png;base64,", remove it
-        if(base64Image.includes(",")) {
-            base64Image = base64Image.split(',')[1];
-        }
+    try {
 
-        const res = await fetch('/qr/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: base64Image })  // <- We'll fix this below
+        const decodedText = await html5QrCode.scanFile(file, true);
+
+        console.log("QR FROM FILE:", decodedText);
+
+        const res = await fetch("/qr/verify", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ token: decodedText })
         });
 
         const data = await res.json();
+
         if (data.valid) {
+
             qrVerified = true;
             sessionId = data.session_id;
+
             document.getElementById("qrStatus").innerText = "QR verified ✅";
             showToast("QR verified!", "success");
 
-            if(qrScanner) qrScanner.stop();
             startFaceCamera();
+
         } else {
+
             document.getElementById("qrStatus").innerText = "Invalid or expired QR ❌";
             showToast("Invalid or expired QR", "danger");
+
         }
-    };
-    reader.readAsDataURL(file);
+
+    } catch (err) {
+        showToast("QR scan failed", "danger");
+    }
 }
 
 // ---------------- QR SUCCESS HANDLER ----------------
 function onQRScanned(decodedText) {
+    
     if (qrVerified) return;
-
-    // The QR token from backend is just the string, no data:image prefix
-    let token = decodedText.trim();
 
     fetch("/qr/verify", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ token })
+        body: JSON.stringify({ token: decodedText })
     })
     .then(res => res.json())
     .then(data => {
+
         if (data.valid) {
+
             qrVerified = true;
             sessionId = data.session_id;
+
             document.getElementById("qrStatus").innerText = "QR verified ✅";
             showToast("QR verified!", "success");
 
-            if(qrScanner) qrScanner.stop();
+            if (qrScanner) qrScanner.stop();
+
             startFaceCamera();
-        } else {
-            document.getElementById("qrStatus").innerText = "QR expired ❌";
-            showToast("Invalid or expired QR", "danger");
         }
+        else {
+
+            document.getElementById("qrStatus").innerText = "Invalid or expired QR ❌";
+            showToast("Invalid or expired QR", "danger");
+
+        }
+
     });
+}
+
+// ---------------- START FACE CAMERA ----------------
+async function startFaceCamera() {
+
+    const video = document.getElementById("video");
+
+    try {
+
+        faceStream = await navigator.mediaDevices.getUserMedia({
+            video: true
+        });
+
+        video.srcObject = faceStream;
+        video.play();
+
+        document.getElementById("faceStatus").innerText = "Camera ready for face verification";
+
+    }
+    catch(err) {
+
+        console.log("Camera error:", err);
+        showToast("Camera access denied", "danger");
+
+    }
 }
 
 // ---------------- FACE VERIFY ----------------
@@ -157,6 +195,9 @@ async function captureFace() {
         faceVerified ? "Face verified ✅" : "Face failed ❌";
 
     showToast(faceVerified ? "Face verified!" : "Face failed", faceVerified ? "success" : "danger");
+    if(faceVerified && faceStream){
+    faceStream.getTracks().forEach(track => track.stop());
+}
 }
 
 // ---------------- MARK ATTENDANCE ----------------

@@ -5,9 +5,8 @@ class QRSession(db.Model):
     __tablename__ = "qr_session"
 
     id = db.Column(db.Integer, primary_key=True)
-    teacher_id = db.Column(db.Integer)
-    token= db.Column(db.String(255), unique=True)
-
+    teacher_id = db.Column(db.Integer, nullable=False)  
+    token = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Session expiry (10 minutes)
