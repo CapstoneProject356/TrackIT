@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, session, redirect
 from backend.database.db_init import db
 from ..models.user import User
+from flask_login import login_user, logout_user, login_required, current_user
 import base64
 import os
 from datetime import datetime
@@ -97,7 +98,9 @@ def login():
     user = User.query.filter_by(email=data['email']).first()
 
     if user and user.check_password(data['password']):
-
+        
+        login_user(user)
+        
         # STORE LOGIN SESSION
         session["user_id"] = user.id
         session["role"] = user.role
@@ -109,5 +112,6 @@ def login():
 
 @auth_bp.route("/logout")
 def logout():
+    logout_user()
     session.clear()
     return redirect("/")  # Redirect to home page after logout

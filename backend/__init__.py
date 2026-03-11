@@ -3,6 +3,8 @@ from backend.database.db_init import db
 from .config import Config
 from flask import session, request, redirect, url_for 
 from backend.models.user import User
+from flask_login import LoginManager
+
 
 def create_app():
 
@@ -15,6 +17,15 @@ def create_app():
 
     # Initialize DB
     db.init_app(app)
+    
+    # Initialize LoginManager
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = "login_page"  # route name for login
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
     # ================= FRONTEND ROUTES =================
 

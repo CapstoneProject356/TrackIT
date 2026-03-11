@@ -5,9 +5,11 @@ from backend.database.db_init import db
 from backend.utils.gps_checker import verify_gps
 from backend.utils.face_recognition import verify_face
 from datetime import datetime, timedelta
+from flask_login import login_required, current_user
 
 # Blueprint
 attendance_bp = Blueprint("attendance", __name__, url_prefix="/attendance")
+@login_required
 
 
 # =========================================================
@@ -108,20 +110,23 @@ def mark_attendance():
 # =========================================================
 # DAILY REPORT
 # =========================================================
-
 @attendance_bp.route("/daily_report")
 def daily_report():
-
     today = datetime.utcnow().date()
 
-    records = Attendance.query.filter(
-        db.func.date(Attendance.timestamp) == today
-    ).all()
+    if current_user.role == "student":
+        # Student sees only their own attendance
+        records = Attendance.query.filter(
+            db.func.date(Attendance.timestamp) == today,
+            Attendance.student_id == current_user.id
+        ).all()
+    else:
+        # Faculty sees everyone
+        records = Attendance.query.filter(
+            db.func.date(Attendance.timestamp) == today
+        ).all()
 
-    return render_template(
-        "daily_report.html",
-        records=records
-    )
+    return render_template("daily_report.html", records=records)
 
 
 # =========================================================
@@ -130,17 +135,19 @@ def daily_report():
 
 @attendance_bp.route("/weekly_report")
 def weekly_report():
-
     week_ago = datetime.utcnow() - timedelta(days=7)
 
-    records = Attendance.query.filter(
-        Attendance.timestamp >= week_ago
-    ).all()
+    if current_user.role == "student":
+        records = Attendance.query.filter(
+            Attendance.timestamp >= week_ago,
+            Attendance.student_id == current_user.id
+        ).all()
+    else:
+        records = Attendance.query.filter(
+            Attendance.timestamp >= week_ago
+        ).all()
 
-    return render_template(
-        "weekly_report.html",
-        records=records
-    )
+    return render_template("weekly_report.html", records=records)
 
 
 # =========================================================
@@ -149,15 +156,17 @@ def weekly_report():
 
 @attendance_bp.route("/monthly_report")
 def monthly_report():
-
     today = datetime.utcnow()
     start_month = today.replace(day=1)
 
-    records = Attendance.query.filter(
-        Attendance.timestamp >= start_month
-    ).all()
+    if current_user.role == "student":
+        records = Attendance.query.filter(
+            Attendance.timestamp >= start_month,
+            Attendance.student_id == current_user.id
+        ).all()
+    else:
+        records = Attendance.query.filter(
+            Attendance.timestamp >= start_month
+        ).all()
 
-    return render_template(
-        "monthly_report.html",
-        records=records
-    )
+    return render_template("monthly_report.html", records=records)

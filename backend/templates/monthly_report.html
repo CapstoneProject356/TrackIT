@@ -22,7 +22,7 @@
     {% for record in records %}
 
     <tr>
-        <td>{{ record.student_name }}</td>
+        <td>{{ record.student.name }}</td>
         <td>{{ record.timestamp.strftime("%Y-%m-%d") }}</td>
 
         <td>
