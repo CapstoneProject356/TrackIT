@@ -4,6 +4,37 @@
 
 <main>
 
+<!-- ================= HERO SECTION ================= -->
+<section class="hero-dark d-flex align-items-center text-center">
+    <div class="container">
+
+        <!-- TrackIT Logo -->
+        <img src="{{ url_for('static', filename='assets/logo.png') }}"
+             alt="TrackIT Logo"
+             class="hero-logo mb-3">
+
+        <!-- Title -->
+        <h1 class="display-4 fw-bold text-white mb-3">
+            TrackIT
+        </h1>
+
+        <h2 class="display-4 fw-bold text-white mb-3">
+            Smart Attendance for Modern Campuses
+        </h2>
+
+        <p class="lead text-light mb-4">
+            TrackIT uses GPS verification, Face Recognition and Dynamic QR codes
+            to ensure secure, accurate and real-time attendance tracking.
+        </p>
+
+        <a href="/login" class="btn btn-primary btn-lg px-4">
+            Login to TrackIT
+        </a>
+
+    </div>
+</section>
+
+
 <!-- ================= CAROUSEL ================= -->
 <section class="carousel-dark py-4">
     <div class="container">

@@ -7,7 +7,41 @@
     --accent: #0d6efd;
 }
 
+.hero-logo{
+width:340px;
+height:auto;
+margin-bottom:5px;
+transform: translateY(-120px);
+filter: drop-shadow(0 10px 30px rgba(0,0,0,0.6));
+}
 
+@media (max-width:768px){
+
+.hero-logo{
+width:180px;
+transform: translateY(-20px);
+}
+
+}
+
+.hero-dark{
+    margin-top:-20px;
+    min-height:100vh;
+    background:#0b0f14;
+    display:flex;
+    align-items:flex-start;   /* moves content upward */
+    justify-content:center;
+    padding-top:20px;         /* space from navbar */
+}
+
+.hero-dark h1{
+font-size:3rem;
+margin-top:-10px;
+}
+
+.hero-dark h2{
+margin-top:-10px;
+}
 
 /* =========================
    GENERAL BODY
@@ -292,4 +326,25 @@ input.form-control {
     font-size: 18px;
     padding: 10px 30px;
     border-radius: 10px;
+}
+
+/* =========================
+   MOBILE CAROUSEL FIX
+   ========================= */
+@media (max-width:768px){
+
+.carousel-item{
+height:300px;
+min-height:300px;
+}
+
+.carousel-item img{
+height:300px;
+object-fit:cover;
+}
+
+.carousel-img{
+height:300px;
+}
+
 }
