@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Yearly Report{% endblock %}
+
+{% block content %}
+<h2 class="text-center">Yearly Attendance Report</h2>
+
+<div class="table-responsive">
+    <table class="table table-bordered mt-4">
+        <thead class="table-dark">
+            <tr>
+                <th>Student Name</th>
+                <th>Academic Year</th>
+                <th>Attendance %</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>{{ record.name }}</td>
+                <td>{{ record.academic_year }}</td>
+                <td>{{ record.percentage }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<a href="/reports" class="btn btn-secondary mt-3">Back</a>
+{% endblock %}

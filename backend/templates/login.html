@@ -8,12 +8,7 @@
     <div class="card-body">
 
 <h3 id="formTitle" class="text-center mb-4">Login</h3>
-        <!-- ROLE -->
-        <select id="role" class="form-select mb-3" onchange="toggleRoleFields()">
-            <option value="student">Student</option>
-            <option value="faculty">Faculty</option>
-            <option value="admin">Admin</option>
-        </select>
+
 
         <!-- LOGIN -->
         <div id="loginForm">
@@ -31,6 +26,7 @@
 
         <!-- REGISTER -->
         <div id="registerForm" style="display:none">
+            <!-- ROLE --> <select id="role" class="form-select mb-3" onchange="toggleRoleFields()"> <option value="student">Student</option> <option value="faculty">Faculty</option> <option value="admin">Admin</option> </select>
 
             <input id="regName" class="form-control mb-2" placeholder="Full Name">
             <input id="regEmail" class="form-control mb-2" placeholder="Email">
@@ -40,8 +36,15 @@
             <div id="studentFields">
 
                 <input id="regRoll" class="form-control mb-2" placeholder="Roll Number">
-                <input id="regDept" class="form-control mb-2" placeholder="Department">
-
+                <select id="regDept" class="form-select mb-2">
+                     <option value="">Select Department</option>
+                     <option value="CO">CO</option>
+                     <option value="IT">IT</option>
+                     <option value="ME">ME</option>
+                     <option value="CE">CE</option>
+                     <option value="EE">EE</option>
+                     <option value="EJ">EJ</option>
+                </select>
                 <label class="mt-2">Register Face</label>
 
                 <video id="video" width="100%" height="200" autoplay class="border rounded"></video>

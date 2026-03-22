@@ -205,3 +205,56 @@ def monthly_report():
             })
 
     return render_template("monthly_report.html", records=summary)
+
+# =========================================================
+# YEARLY REPORT
+# =========================================================
+@attendance_bp.route("/yearly_report")
+def yearly_report():
+    today = datetime.utcnow().date()
+    
+    # Determine academic year: July - June
+    if today.month >= 7:  # July or later
+        start_year = today.year
+        end_year = today.year + 1
+    else:  # Jan - June
+        start_year = today.year - 1
+        end_year = today.year
+
+    academic_year = f"{start_year}-{end_year}"
+
+    if current_user.role == "student":
+        students = [current_user]
+        records = Attendance.query.filter(
+            Attendance.student_id == current_user.id,
+            extract('year', Attendance.timestamp) >= start_year,
+            extract('year', Attendance.timestamp) <= end_year
+        ).all()
+    else:
+        students = User.query.filter_by(role="student").all()
+        records = Attendance.query.filter(
+            extract('year', Attendance.timestamp) >= start_year,
+            extract('year', Attendance.timestamp) <= end_year
+        ).all()
+
+    # Calculate attendance %
+    student_data = {}
+    for student in students:
+        student_records = [r for r in records if r.student_id == student.id]
+        total = len(student_records)
+        present = sum(1 for r in student_records if r.face_verified)
+        percentage = round((present / total) * 100, 2) if total else 0
+        student_data[student.name] = {
+            "academic_year": academic_year,
+            "percentage": percentage
+        }
+
+    summary = []
+    for name, data in student_data.items():
+        summary.append({
+            "name": name,
+            "academic_year": data["academic_year"],
+            "percentage": data["percentage"]
+        })
+
+    return render_template("yearly_report.html", records=summary)

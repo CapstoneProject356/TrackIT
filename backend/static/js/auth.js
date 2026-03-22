@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
             headers:{"Content-Type":"application/json"},
             body:JSON.stringify({
                 email:document.getElementById("loginEmail").value,
-                password:document.getElementById("loginPassword").value
+                password:document.getElementById("loginPassword").value,
             })
         })
 
@@ -77,28 +77,37 @@ document.addEventListener("DOMContentLoaded", function () {
     // STUDENT VALIDATION
     if(role==="student"){
 
-        if(roll==="" || dept===""){
-            alert("Please fill Roll Number and Department")
-            return
-        }
-
-        if(!face_image){
-            alert("Please capture face before registering")
-            return
-        }
-
+    if(roll==="" || dept===""){
+        alert("Please fill Roll Number and Department")
+        return
     }
+
+    // ✅ INTEGER VALIDATION
+    if(!/^\d+$/.test(roll)){
+        alert("Roll Number must be a valid integer")
+        return
+    }
+
+    if(!face_image){
+        alert("Please capture face before registering")
+        return
+    }
+}
 
     // FACULTY VALIDATION
-    if(role==="faculty"){
+if(role==="faculty"){
 
-        if(emp_id==="" || subject===""){
-            alert("Please fill Employee ID and Subject")
-            return
-        }
-
+    if(emp_id==="" || subject===""){
+        alert("Please fill Employee ID and Subject")
+        return
     }
 
+    // ✅ INTEGER VALIDATION
+    if(!/^\d+$/.test(emp_id)){
+        alert("Employee ID must be a valid integer")
+        return
+    }
+}
     // ADMIN VALIDATION
     if(role==="admin"){
 
