@@ -13,3 +13,5 @@ face-recognition
 numpy
 pillow
 qrcode
+xhtml2pdf
+reportlab

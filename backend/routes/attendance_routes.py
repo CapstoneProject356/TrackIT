@@ -1,27 +1,60 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, send_file
 from backend.models.attendance import Attendance
 from backend.models.qr_session import QRSession
 from backend.database.db_init import db
 from backend.utils.gps_checker import verify_gps
 from backend.utils.face_recognition import verify_face
-from datetime import datetime, timedelta
+from datetime import datetime
 from flask_login import login_required, current_user
 from sqlalchemy import extract
 from collections import defaultdict
 from backend.models.user import User
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+import io
+
+
+# =========================================================
+# PDF GENERATOR
+# =========================================================
+def generate_pdf(title, headers, data):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph(title, styles['Title']))
+
+    table_data = [headers] + data
+
+    table = Table(table_data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('TEXTCOLOR',(0,0),(-1,0),colors.white),
+        ('ALIGN',(0,0),(-1,-1),'CENTER'),
+        ('GRID', (0,0), (-1,-1), 1, colors.black)
+    ]))
+
+    elements.append(table)
+
+    doc.build(elements)
+    buffer.seek(0)
+
+    return buffer
+
 
 # Blueprint
 attendance_bp = Blueprint("attendance", __name__, url_prefix="/attendance")
-@login_required
 
 
 # =========================================================
 # VERIFY & MARK ATTENDANCE
 # =========================================================
-
 def verify_and_mark_attendance(student_id, session_id, face_image, latitude, longitude):
 
-    # ---------- Check QR Session ----------
     qr_session = QRSession.query.get(session_id)
 
     if not qr_session:
@@ -35,8 +68,6 @@ def verify_and_mark_attendance(student_id, session_id, face_image, latitude, lon
         db.session.commit()
         return {"error": "QR code expired"}
 
-
-    # ---------- Prevent Duplicate Attendance ----------
     existing = Attendance.query.filter_by(
         student_id=student_id,
         session_id=session_id
@@ -45,23 +76,11 @@ def verify_and_mark_attendance(student_id, session_id, face_image, latitude, lon
     if existing:
         return {"error": "Attendance already marked"}
 
-
-    # ---------- GPS Verification ----------
     if not verify_gps(latitude, longitude):
         return {"error": "You are not inside the classroom"}
 
+    image_bytes = face_image.read() if face_image else None
 
-    # ---------- Face Already Verified ----------
-    # Face verification is handled in /face/verify
-
-
-    # ---------- Read Face Image ----------
-    image_bytes = None
-    if face_image:
-        image_bytes = face_image.read()
-
-
-    # ---------- Save Attendance ----------
     attendance = Attendance(
         student_id=student_id,
         session_id=session_id,
@@ -80,9 +99,8 @@ def verify_and_mark_attendance(student_id, session_id, face_image, latitude, lon
 
 
 # =========================================================
-# MARK ATTENDANCE ROUTE
+# MARK ATTENDANCE
 # =========================================================
-
 @attendance_bp.route("/mark", methods=["POST"])
 def mark_attendance():
 
@@ -94,35 +112,32 @@ def mark_attendance():
 
     face_image = request.files.get("face_image")
 
-    # ---------- Validate Input ----------
     if not student_id or not session_id or not face_image:
         return jsonify({"error": "Missing required data"}), 400
 
-
     result = verify_and_mark_attendance(
-        student_id,
-        session_id,
-        face_image,
-        latitude,
-        longitude
+        student_id, session_id, face_image, latitude, longitude
     )
 
     return jsonify(result)
 
 
 # =========================================================
-# DAILY REPORT
+# DAILY REPORT (HTML)
 # =========================================================
 @attendance_bp.route("/daily_report")
+@login_required
 def daily_report():
     today = datetime.utcnow().date()
-    if current_user.role == "student":
-        students = [current_user]  # only self
-    else:
-        students = User.query.filter_by(role="student").all()  # all students
 
-    # get today's attendance
-    records_dict = {a.student_id: a for a in Attendance.query.filter(db.func.date(Attendance.timestamp) == today).all()}
+    students = [current_user] if current_user.role == "student" \
+        else User.query.filter_by(role="student").all()
+
+    records_dict = {
+        a.student_id: a for a in Attendance.query.filter(
+            db.func.date(Attendance.timestamp) == today
+        ).all()
+    }
 
     summary = []
     for student in students:
@@ -134,127 +149,261 @@ def daily_report():
         })
 
     return render_template("daily_report.html", records=summary)
-# =========================================================
-# WEEKLY REPORT
-# =========================================================
 
+
+# =========================================================
+# DAILY PDF
+# =========================================================
+@attendance_bp.route("/daily_report/pdf")
+@login_required
+def daily_report_pdf():
+    today = datetime.utcnow().date()
+
+    students = [current_user] if current_user.role == "student" \
+        else User.query.filter_by(role="student").all()
+
+    records_dict = {
+        a.student_id: a for a in Attendance.query.filter(
+            db.func.date(Attendance.timestamp) == today
+        ).all()
+    }
+
+    data = []
+    for student in students:
+        attendance = records_dict.get(student.id)
+        status = "Present" if attendance and attendance.face_verified else "Absent"
+
+        data.append([student.name, today.strftime("%Y-%m-%d"), status])
+
+    pdf = generate_pdf("Daily Report", ["Name", "Date", "Status"], data)
+
+    return send_file(pdf, download_name="daily_report.pdf", as_attachment=True)
+
+
+# =========================================================
+# WEEKLY REPORT (HTML)
+# =========================================================
 @attendance_bp.route("/weekly_report")
+@login_required
 def weekly_report():
-    # fetch all attendance
+
     if current_user.role == "student":
-        records = Attendance.query.filter(Attendance.student_id == current_user.id).order_by(Attendance.timestamp).all()
+        records = Attendance.query.filter_by(student_id=current_user.id).all()
         students = [current_user]
     else:
-        records = Attendance.query.order_by(Attendance.timestamp).all()
+        records = Attendance.query.all()
         students = User.query.filter_by(role="student").all()
 
-    # sequential weeks based on lecture dates
     unique_weeks = sorted({r.timestamp.date() for r in records})
-    date_to_week = {date: idx+1 for idx, date in enumerate(unique_weeks)}
+    date_to_week = {d: i+1 for i, d in enumerate(unique_weeks)}
 
     student_weeks = defaultdict(lambda: defaultdict(lambda: {"present": 0, "total": 0}))
+
     for r in records:
-        week_num = date_to_week[r.timestamp.date()]
-        student_weeks[r.student.name][week_num]["total"] += 1
+        w = date_to_week[r.timestamp.date()]
+        student_weeks[r.student.name][w]["total"] += 1
         if r.face_verified:
-            student_weeks[r.student.name][week_num]["present"] += 1
+            student_weeks[r.student.name][w]["present"] += 1
 
     summary = []
     for student in students:
-        for week_num in range(1, len(unique_weeks)+1):
-            data = student_weeks[student.name].get(week_num, {"present": 0, "total": 1})
-            percent = round((data["present"]/data["total"])*100, 2) if data["total"] else 0
+        for w in range(1, len(unique_weeks)+1):
+            d = student_weeks[student.name].get(w, {"present": 0, "total": 1})
+            percent = round((d["present"]/d["total"])*100, 2)
             summary.append({
                 "name": student.name,
-                "week": f"Week {week_num}",
+                "week": f"Week {w}",
                 "percentage": percent
             })
 
     return render_template("weekly_report.html", records=summary)
+
+
 # =========================================================
-# MONTHLY REPORT
+# WEEKLY PDF
+# =========================================================
+@attendance_bp.route("/weekly_report/pdf")
+@login_required
+def weekly_report_pdf():
+
+    if current_user.role == "student":
+        records = Attendance.query.filter_by(student_id=current_user.id).all()
+        students = [current_user]
+    else:
+        records = Attendance.query.all()
+        students = User.query.filter_by(role="student").all()
+
+    unique_weeks = sorted({r.timestamp.date() for r in records})
+    date_to_week = {d: i+1 for i, d in enumerate(unique_weeks)}
+
+    student_weeks = defaultdict(lambda: defaultdict(lambda: {"present": 0, "total": 0}))
+
+    for r in records:
+        w = date_to_week[r.timestamp.date()]
+        student_weeks[r.student.name][w]["total"] += 1
+        if r.face_verified:
+            student_weeks[r.student.name][w]["present"] += 1
+
+    data = []
+    for student in students:
+        for w in range(1, len(unique_weeks)+1):
+            d = student_weeks[student.name].get(w, {"present": 0, "total": 1})
+            percent = round((d["present"]/d["total"])*100, 2)
+
+            data.append([student.name, f"Week {w}", f"{percent}%"])
+
+    pdf = generate_pdf("Weekly Report", ["Name", "Week", "Attendance %"], data)
+
+    return send_file(pdf, download_name="weekly_report.pdf", as_attachment=True)
+
+
+# =========================================================
+# MONTHLY REPORT (HTML)
 # =========================================================
 @attendance_bp.route("/monthly_report")
+@login_required
 def monthly_report():
+
     if current_user.role == "student":
-        records = Attendance.query.filter(Attendance.student_id == current_user.id).all()
+        records = Attendance.query.filter_by(student_id=current_user.id).all()
         students = [current_user]
     else:
         records = Attendance.query.all()
         students = User.query.filter_by(role="student").all()
 
     student_months = defaultdict(lambda: defaultdict(lambda: {"present": 0, "total": 0}))
-    for r in records:
-        month = r.timestamp.month
-        student_months[r.student.name][month]["total"] += 1
-        if r.face_verified:
-            student_months[r.student.name][month]["present"] += 1
 
-    months_with_lectures = sorted({r.timestamp.month for r in records})
-    month_names = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+    for r in records:
+        m = r.timestamp.month
+        student_months[r.student.name][m]["total"] += 1
+        if r.face_verified:
+            student_months[r.student.name][m]["present"] += 1
+
+    months = sorted({r.timestamp.month for r in records})
+    names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 
     summary = []
     for student in students:
-        for m in months_with_lectures:
-            data = student_months[student.name].get(m, {"present": 0, "total": 1})
-            percent = round((data["present"]/data["total"])*100, 2) if data["total"] else 0
+        for m in months:
+            d = student_months[student.name].get(m, {"present": 0, "total": 1})
+            percent = round((d["present"]/d["total"])*100, 2)
+
             summary.append({
                 "name": student.name,
-                "month": month_names[m-1],
+                "month": names[m-1],
                 "percentage": percent
             })
 
     return render_template("monthly_report.html", records=summary)
 
+
 # =========================================================
-# YEARLY REPORT
+# MONTHLY PDF
+# =========================================================
+@attendance_bp.route("/monthly_report/pdf")
+@login_required
+def monthly_report_pdf():
+
+    if current_user.role == "student":
+        records = Attendance.query.filter_by(student_id=current_user.id).all()
+        students = [current_user]
+    else:
+        records = Attendance.query.all()
+        students = User.query.filter_by(role="student").all()
+
+    student_months = defaultdict(lambda: defaultdict(lambda: {"present": 0, "total": 0}))
+
+    for r in records:
+        m = r.timestamp.month
+        student_months[r.student.name][m]["total"] += 1
+        if r.face_verified:
+            student_months[r.student.name][m]["present"] += 1
+
+    months = sorted({r.timestamp.month for r in records})
+    names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+
+    data = []
+    for student in students:
+        for m in months:
+            d = student_months[student.name].get(m, {"present": 0, "total": 1})
+            percent = round((d["present"]/d["total"])*100, 2)
+
+            data.append([student.name, names[m-1], f"{percent}%"])
+
+    pdf = generate_pdf("Monthly Report", ["Name", "Month", "Attendance %"], data)
+
+    return send_file(pdf, download_name="monthly_report.pdf", as_attachment=True)
+
+
+# =========================================================
+# YEARLY REPORT (HTML)
 # =========================================================
 @attendance_bp.route("/yearly_report")
+@login_required
 def yearly_report():
-    today = datetime.utcnow().date()
-    
-    # Determine academic year: July - June
-    if today.month >= 7:  # July or later
-        start_year = today.year
-        end_year = today.year + 1
-    else:  # Jan - June
-        start_year = today.year - 1
-        end_year = today.year
 
+    today = datetime.utcnow().date()
+
+    start_year = today.year if today.month >= 7 else today.year - 1
+    end_year = start_year + 1
     academic_year = f"{start_year}-{end_year}"
 
     if current_user.role == "student":
         students = [current_user]
-        records = Attendance.query.filter(
-            Attendance.student_id == current_user.id,
-            extract('year', Attendance.timestamp) >= start_year,
-            extract('year', Attendance.timestamp) <= end_year
-        ).all()
+        records = Attendance.query.filter_by(student_id=current_user.id).all()
     else:
         students = User.query.filter_by(role="student").all()
-        records = Attendance.query.filter(
-            extract('year', Attendance.timestamp) >= start_year,
-            extract('year', Attendance.timestamp) <= end_year
-        ).all()
+        records = Attendance.query.all()
 
-    # Calculate attendance %
-    student_data = {}
+    summary = []
+
     for student in students:
         student_records = [r for r in records if r.student_id == student.id]
         total = len(student_records)
         present = sum(1 for r in student_records if r.face_verified)
-        percentage = round((present / total) * 100, 2) if total else 0
-        student_data[student.name] = {
-            "academic_year": academic_year,
-            "percentage": percentage
-        }
 
-    summary = []
-    for name, data in student_data.items():
+        percent = round((present/total)*100, 2) if total else 0
+
         summary.append({
-            "name": name,
-            "academic_year": data["academic_year"],
-            "percentage": data["percentage"]
+            "name": student.name,
+            "academic_year": academic_year,
+            "percentage": percent
         })
 
     return render_template("yearly_report.html", records=summary)
+
+
+# =========================================================
+# YEARLY PDF
+# =========================================================
+@attendance_bp.route("/yearly_report/pdf")
+@login_required
+def yearly_report_pdf():
+
+    today = datetime.utcnow().date()
+
+    start_year = today.year if today.month >= 7 else today.year - 1
+    end_year = start_year + 1
+    academic_year = f"{start_year}-{end_year}"
+
+    if current_user.role == "student":
+        students = [current_user]
+        records = Attendance.query.filter_by(student_id=current_user.id).all()
+    else:
+        students = User.query.filter_by(role="student").all()
+        records = Attendance.query.all()
+
+    data = []
+
+    for student in students:
+        student_records = [r for r in records if r.student_id == student.id]
+        total = len(student_records)
+        present = sum(1 for r in student_records if r.face_verified)
+
+        percent = round((present/total)*100, 2) if total else 0
+
+        data.append([student.name, academic_year, f"{percent}%"])
+
+    pdf = generate_pdf("Yearly Report", ["Name", "Academic Year", "Attendance %"], data)
+
+    return send_file(pdf, download_name="yearly_report.pdf", as_attachment=True)

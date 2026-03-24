@@ -19,7 +19,7 @@ app = create_app()
 app.register_blueprint(face_bp)
 app.register_blueprint(gps_bp)
 app.register_blueprint(qr_bp, url_prefix="/qr")
-app.register_blueprint(attendance_bp)
+app.register_blueprint(attendance_bp, url_prefix="/attendance")
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(admin_bp)
 
