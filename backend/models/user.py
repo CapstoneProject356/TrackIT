@@ -12,6 +12,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
+    student_class = db.Column(db.String(10))
    # subject = db.Column(db.String(100), nullable=True)
     face_image = db.Column(db.String(300), nullable=True)
     face_encoding = db.Column(db.PickleType)

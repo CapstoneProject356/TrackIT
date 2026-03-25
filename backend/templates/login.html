@@ -45,6 +45,12 @@
                      <option value="EE">EE</option>
                      <option value="EJ">EJ</option>
                 </select>
+                <select id="regClass" class="form-select mb-2">
+                  <option value="">Select Class</option>
+                  <option value="FY">First Year (FY)</option>
+                  <option value="SY">Second Year (SY)</option>
+                  <option value="TY">Third Year (TY)</option>
+                </select>
                 <label class="mt-2">Register Face</label>
 
                 <video id="video" width="100%" height="200" autoplay class="border rounded"></video>
@@ -222,6 +228,7 @@ function register(){
 
         let roll = document.getElementById("regRoll").value
         let dept = document.getElementById("regDept").value
+        let studentClass = document.getElementById("regClass").value
         let face = document.getElementById("faceImage").value
 
         if(roll === "" || dept === "" || face === ""){

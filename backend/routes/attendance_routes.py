@@ -336,74 +336,102 @@ def monthly_report_pdf():
 
 
 # =========================================================
-# YEARLY REPORT (HTML)
+# YEARLY REPORT (NOW = DATE RANGE AVERAGE REPORT)
 # =========================================================
-@attendance_bp.route("/yearly_report")
-@login_required
+@attendance_bp.route("/yearly_report", methods=["GET", "POST"])
 def yearly_report():
 
-    today = datetime.utcnow().date()
+    if request.method == "POST":
 
-    start_year = today.year if today.month >= 7 else today.year - 1
-    end_year = start_year + 1
-    academic_year = f"{start_year}-{end_year}"
+        start_date = request.form.get("start_date")
+        end_date = request.form.get("end_date")
 
-    if current_user.role == "student":
-        students = [current_user]
-        records = Attendance.query.filter_by(student_id=current_user.id).all()
-    else:
-        students = User.query.filter_by(role="student").all()
-        records = Attendance.query.all()
+        # Convert to datetime
+        start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
-    summary = []
+        # Get records in date range
+        if current_user.role == "student":
+            students = [current_user]
+            records = Attendance.query.filter(
+                Attendance.student_id == current_user.id,
+                Attendance.timestamp >= start_date,
+                Attendance.timestamp <= end_date
+            ).all()
+        else:
+            students = User.query.filter_by(role="student").all()
+            records = Attendance.query.filter(
+                Attendance.timestamp >= start_date,
+                Attendance.timestamp <= end_date
+            ).all()
 
-    for student in students:
-        student_records = [r for r in records if r.student_id == student.id]
-        total = len(student_records)
-        present = sum(1 for r in student_records if r.face_verified)
+        # Prepare summary
+        summary = []
 
-        percent = round((present/total)*100, 2) if total else 0
+        for student in students:
+            student_records = [r for r in records if r.student_id == student.id]
 
-        summary.append({
-            "name": student.name,
-            "academic_year": academic_year,
-            "percentage": percent
-        })
+            total = len(student_records)
+            present = sum(1 for r in student_records if r.face_verified)
 
-    return render_template("yearly_report.html", records=summary)
+            percentage = round((present / total) * 100, 2) if total else 0
 
+            summary.append({
+                "name": student.name,
+                "start_date": start_date.strftime("%Y-%m-%d"),
+                "end_date": end_date.strftime("%Y-%m-%d"),
+                "percentage": percentage
+            })
 
+        return render_template("yearly_report.html", records=summary)
+
+    # First load
+    return render_template("yearly_report.html", records=None)
 # =========================================================
-# YEARLY PDF
+# PDF DOWNLOAD FOR AVERAGE REPORT
 # =========================================================
-@attendance_bp.route("/yearly_report/pdf")
-@login_required
+@attendance_bp.route("/yearly_report/pdf", methods=["POST"])
 def yearly_report_pdf():
 
-    today = datetime.utcnow().date()
-
-    start_year = today.year if today.month >= 7 else today.year - 1
-    end_year = start_year + 1
-    academic_year = f"{start_year}-{end_year}"
+    start_date = datetime.strptime(request.form.get("start_date"), "%Y-%m-%d")
+    end_date = datetime.strptime(request.form.get("end_date"), "%Y-%m-%d")
 
     if current_user.role == "student":
         students = [current_user]
-        records = Attendance.query.filter_by(student_id=current_user.id).all()
+        records = Attendance.query.filter(
+            Attendance.student_id == current_user.id,
+            Attendance.timestamp >= start_date,
+            Attendance.timestamp <= end_date
+        ).all()
     else:
         students = User.query.filter_by(role="student").all()
-        records = Attendance.query.all()
+        records = Attendance.query.filter(
+            Attendance.timestamp >= start_date,
+            Attendance.timestamp <= end_date
+        ).all()
 
+    # IMPORTANT: Use LIST (not dict)
     data = []
 
     for student in students:
         student_records = [r for r in records if r.student_id == student.id]
+
         total = len(student_records)
         present = sum(1 for r in student_records if r.face_verified)
 
-        percent = round((present/total)*100, 2) if total else 0
+        percent = round((present / total) * 100, 2) if total else 0
 
-        data.append([student.name, academic_year, f"{percent}%"])
+        data.append([
+            student.name,
+            start_date.strftime("%Y-%m-%d"),
+            end_date.strftime("%Y-%m-%d"),
+            f"{percent}%"
+        ])
 
-    pdf = generate_pdf("Yearly Report", ["Name", "Academic Year", "Attendance %"], data)
+    pdf = generate_pdf(
+        "Attendance Report",
+        ["Name", "From", "To", "Attendance %"],
+        data
+    )
 
-    return send_file(pdf, download_name="yearly_report.pdf", as_attachment=True)
+    return send_file(pdf, download_name="attendance_report.pdf", as_attachment=True)

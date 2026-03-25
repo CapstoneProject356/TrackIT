@@ -26,6 +26,16 @@ def register():
     password = data.get("password")
     role = data.get("role")
     face_image = data.get("face_image")
+    student_class = data.get("student_class")
+
+    if not student_class:
+        return jsonify(success=False, message="Class is required")
+
+    valid_classes = ["FY", "SY", "TY"]
+    if student_class not in valid_classes:
+        return jsonify(success=False, message="Invalid class")
+
+    user.student_class = student_class
 
     # REQUIRED FIELDS
     if not name or not email or not password:
