@@ -16,6 +16,7 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 
+# ================= REGISTER =================
 @auth_bp.route("/register", methods=["POST"])
 def register():
 
@@ -25,83 +26,83 @@ def register():
     email = data.get("email")
     password = data.get("password")
     role = data.get("role")
-    face_image = data.get("face_image")
-    student_class = data.get("student_class")
-
-    if not student_class:
-        return jsonify(success=False, message="Class is required")
-
-    valid_classes = ["FY", "SY", "TY"]
-    if student_class not in valid_classes:
-        return jsonify(success=False, message="Invalid class")
-
-    user.student_class = student_class
 
     # REQUIRED FIELDS
-    if not name or not email or not password:
+    if not name or not email or not password or not role:
         return jsonify(success=False, message="All fields are required")
 
     # EMAIL FORMAT
-    email_regex = r"[^@]+@[^@]+\.[^@]+"
-    if not re.match(email_regex, email):
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
         return jsonify(success=False, message="Invalid email format")
 
     # PASSWORD VALIDATION
-    password_regex = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$'
-    if not re.match(password_regex, password):
+    if not re.match(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$', password):
         return jsonify(
             success=False,
             message="Password must be 8+ characters with letter, number and symbol"
         )
 
-    # DUPLICATE EMAIL
+    # DUPLICATE EMAIL CHECK
     if User.query.filter_by(email=email).first():
         return jsonify(success=False, message="Email already registered")
 
+    # CREATE USER
     user = User(name=name, email=email, role=role)
     user.set_password(password)
 
-    # STUDENT SPECIFIC VALIDATION
+    # ================= STUDENT ONLY =================
     if role == "student":
+
+        student_class = data.get("student_class")
         roll = data.get("roll")
         dept = data.get("department")
+        face_image = data.get("face_image")
 
-        # Department required
+        # CLASS VALIDATION
+        if not student_class:
+            return jsonify(success=False, message="Class is required")
+
+        if student_class not in ["FY", "SY", "TY"]:
+            return jsonify(success=False, message="Invalid class")
+
+        user.student_class = student_class
+
+        # DEPARTMENT VALIDATION
         if not dept:
             return jsonify(success=False, message="Department is required")
 
-        valid_departments = ["CO","IT", "ME", "CE", "EE","EJ"]  # Add more if needed
-        if dept not in valid_departments:
+        if dept not in ["CO", "IT", "ME", "CE", "EE", "EJ"]:
             return jsonify(success=False, message="Invalid department selected")
+
         user.department = dept
 
-        # Roll number required
+        # ROLL VALIDATION
         if not roll:
             return jsonify(success=False, message="Roll number is required")
 
-        # INTEGER CHECK
         if not str(roll).isdigit():
             return jsonify(success=False, message="Roll number must be an integer")
 
-        # Convert to integer
-        roll = int(roll)
-        user.roll_number = roll  # Make sure User model has `roll_number` column
+        user.roll_number = int(roll)
 
-        # Face capture required
+        # FACE VALIDATION
         if not face_image:
             return jsonify(success=False, message="Face capture required")
 
         # SAVE FACE IMAGE
         image_data = face_image.split(",")[1]
         image_bytes = base64.b64decode(image_data)
+
         filename = f"{email}_{datetime.now().timestamp()}.png"
         filepath = os.path.join(UPLOAD_FOLDER, filename)
 
         with open(filepath, "wb") as f:
             f.write(image_bytes)
 
-        # SAVE PATH AND ENCODING
+        # SAVE PATH
         user.face_image = filepath
+
+        # FACE ENCODING
         image = face_recognition.load_image_file(filepath)
         encodings = face_recognition.face_encodings(image)
 
@@ -113,12 +114,14 @@ def register():
                 message="No face detected. Please register again."
             )
 
+    # ================= SAVE USER =================
     db.session.add(user)
     db.session.commit()
 
     return jsonify(success=True)
 
 
+# ================= LOGIN =================
 @auth_bp.route('/login', methods=['POST'])
 def login():
 
@@ -126,7 +129,6 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    # FETCH USER BY EMAIL ONLY
     user = User.query.filter_by(email=email).first()
 
     if user and user.check_password(password):
@@ -141,8 +143,9 @@ def login():
     return jsonify(success=False, message="Invalid credentials")
 
 
+# ================= LOGOUT =================
 @auth_bp.route("/logout")
 def logout():
     logout_user()
     session.clear()
-    return redirect("/")  # Redirect to home page after logout
+    return redirect("/")

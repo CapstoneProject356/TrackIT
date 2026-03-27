@@ -46,6 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let roll = document.getElementById("regRoll")?.value.trim()
     let dept = document.getElementById("regDept")?.value.trim()
+    let student_class = document.getElementById("regClass")?.value
     let emp_id = document.getElementById("regEmpId")?.value.trim()
     let subject = document.getElementById("regSubject")?.value.trim()
     let admin_key = document.getElementById("regAdminKey")?.value.trim()
@@ -77,8 +78,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // STUDENT VALIDATION
     if(role==="student"){
 
-    if(roll==="" || dept===""){
-        alert("Please fill Roll Number and Department")
+    if(roll==="" || dept==="" || student_class===""){
+        alert("Please fill Roll Number, Department and Class")
         return
     }
 
@@ -129,6 +130,7 @@ if(role==="faculty"){
             role:role,
             roll:roll,
             department:dept,
+            student_class: student_class, 
             emp_id:emp_id,
             subject:subject,
             admin_key:admin_key,
