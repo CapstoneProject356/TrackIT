@@ -26,8 +26,19 @@ def generate_pdf(title, headers, data):
     styles = getSampleStyleSheet()
     elements = []
 
+    # ===== TITLE =====
     elements.append(Paragraph(title, styles['Title']))
 
+    # ===== STATIC HEADER (YOUR REQUIREMENT) =====
+    elements.append(Paragraph("College Name: ____________________", styles['Normal']))
+    elements.append(Paragraph("Faculty Name: ____________________", styles['Normal']))
+    elements.append(Paragraph("Class: ____________________", styles['Normal']))
+    elements.append(Paragraph("Subject: ____________________", styles['Normal']))
+
+    # Small space
+    elements.append(Paragraph("<br/><br/>", styles['Normal']))
+
+    # ===== TABLE =====
     table_data = [headers] + data
 
     table = Table(table_data)
